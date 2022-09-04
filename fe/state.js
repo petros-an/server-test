@@ -1,4 +1,4 @@
-class State{
+export class State{
 
     constructor(){
         this.characters = [];
@@ -18,3 +18,4 @@ export class character{
     }
 
 }
+

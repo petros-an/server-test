@@ -1,7 +1,7 @@
-//import {State} from './state.js';
+import {State} from './state.js';
 
 
-m = document.getElementById("life").getContext("2d");
+var m = document.getElementById("life").getContext("2d");
 const width = 800
 const height = 800
 
