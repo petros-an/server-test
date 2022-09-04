@@ -1,12 +1,12 @@
-/*export class character{
+export class character{
     
     constructor(x, y){
         this.position = {x: x, y: y}
     }
 
-    draw() {
+    draw(m) {
         m.fillStyle = "red";
-        m.fillRect(this.x, this.y, 10, 10);
+        m.fillRect(this.position.x, this.position.y, 10, 10);
     }
 
-}*/
+}
