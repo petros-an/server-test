@@ -3,15 +3,22 @@ import { convertStateStream } from './reciever.mjs';
 
 export class State{
 
-    constructor(m){
+    constructor(m, id){
         this.m = m;
         this.characters = [];
+        this.id = id
     }
 
-    updateState(event){
-        console.log(event)
-        console.log(event.data)
-//        convertStateStream(event.data)
+
+
+    updateState(parsed){
+        // console.log(event)
+        console.log(parsed)
+        this.characters = []
+        for (let i=0; i < parsed['CharacterData'].length; i++) {
+            let characterData = parsed['CharacterData'][i]
+            this.characters[i] = new character(characterData['x'], characterData['y'], this.m)
+        }
     }
 
 }

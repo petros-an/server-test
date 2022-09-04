@@ -7,11 +7,12 @@ package main
 
 import (
 	"flag"
-	"html/template"
 	"log"
 	"net/http"
-
+    "math/rand"
 	"github.com/gorilla/websocket"
+    "encoding/json"
+    "time"
 )
 
 var addr = flag.String("addr", "localhost:8080", "http service address")
@@ -22,7 +23,32 @@ func checkOrigin(r *http.Request) bool {
     return true
 }
 
-func echo(w http.ResponseWriter, r *http.Request) {
+type CharacterData struct {
+    X int `json:"x"`
+    Y int `json:"y"`
+}
+
+type State struct {
+    CharacterData []CharacterData;
+}
+
+// {
+//     "characterData" : [
+//         {
+//             "x": 1,
+//             "y": 2,
+//         }
+//     ]
+// }
+
+var gameState State;
+
+func addCharToRandomPosition(){
+    d := CharacterData{X: rand.Intn(300), Y:rand.Intn(300)}
+    gameState.CharacterData = append(gameState.CharacterData, d)
+}
+
+func handleStateEndpointConnection(w http.ResponseWriter, r *http.Request) {
     var upgrader = websocket.Upgrader{
         ReadBufferSize:  4096,
         WriteBufferSize: 4096,
@@ -35,103 +61,40 @@ func echo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer c.Close()
+
+    addCharToRandomPosition()
+
 	for {
-		mt, message, err := c.ReadMessage()
-		if err != nil {
-			log.Println("read:", err)
-			break
-		}
-		log.Printf("recv: %s", message)
-		err = c.WriteMessage(mt, message)
+
+        message := serializeJson(&gameState)
+        log.Println(string(message))
+		err = c.WriteMessage(websocket.TextMessage, message)
 		if err != nil {
 			log.Println("write:", err)
 			break
 		}
+        time.Sleep(1*time.Second)
+        
 	}
 }
 
-func home(w http.ResponseWriter, r *http.Request) {
-	homeTemplate.Execute(w, "ws://"+r.Host+"/echo")
+func serializeJson(data interface{}) []byte {
+    res, _ := json.Marshal(data)
+    return res
 }
 
 func main() {
 	flag.Parse()
 	log.SetFlags(0)
-	http.HandleFunc("/echo", echo)
-	http.HandleFunc("/", home)
+    gameState = State {
+        CharacterData: []CharacterData{
+            CharacterData{
+                X: 12,
+                Y: 23,
+            },
+
+        },
+    }
+	http.HandleFunc("/state", handleStateEndpointConnection)
 	log.Fatal(http.ListenAndServe(*addr, nil))
 }
-
-var homeTemplate = template.Must(template.New("").Parse(`
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="utf-8">
-<script>  
-window.addEventListener("load", function(evt) {
-    var output = document.getElementById("output");
-    var input = document.getElementById("input");
-    var ws;
-    var print = function(message) {
-        var d = document.createElement("div");
-        d.textContent = message;
-        output.appendChild(d);
-        output.scroll(0, output.scrollHeight);
-    };
-    document.getElementById("open").onclick = function(evt) {
-        if (ws) {
-            return false;
-        }
-        ws = new WebSocket("{{.}}");
-        ws.onopen = function(evt) {
-            print("OPEN");
-        }
-        ws.onclose = function(evt) {
-            print("CLOSE");
-            ws = null;
-        }
-        ws.onmessage = function(evt) {
-            print("RESPONSE: " + evt.data);
-        }
-        ws.onerror = function(evt) {
-            print("ERROR: " + evt.data);
-        }
-        return false;
-    };
-    document.getElementById("send").onclick = function(evt) {
-        if (!ws) {
-            return false;
-        }
-        print("SEND: " + input.value);
-        ws.send(input.value);
-        return false;
-    };
-    document.getElementById("close").onclick = function(evt) {
-        if (!ws) {
-            return false;
-        }
-        ws.close();
-        return false;
-    };
-});
-</script>
-</head>
-<body>
-<table>
-<tr><td valign="top" width="50%">
-<p>Click "Open" to create a connection to the server, 
-"Send" to send a message to the server and "Close" to close the connection. 
-You can change the message and send multiple times.
-<p>
-<form>
-<button id="open">Open</button>
-<button id="close">Close</button>
-<p><input id="input" type="text" value="Hello world!">
-<button id="send">Send</button>
-</form>
-</td><td valign="top" width="50%">
-<div id="output" style="max-height: 70vh;overflow-y: scroll;"></div>
-</td></tr></table>
-</body>
-</html>
-`))

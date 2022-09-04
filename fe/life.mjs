@@ -10,13 +10,19 @@ function draw (x, y, c, w, h) {
   m.fillRect(x, y, w, h);
 };
 
-let socket = new WebSocket("ws://localhost:8080/echo");
+let socket = new WebSocket("ws://localhost:8080/state");
 
-const currentState = new State(m)
-currentState.characters[0] = new character(100,100,m)
-currentState.characters[1] = new character(400,400,m)
+const currentState = new State(m, 'mainstate')
+// currentState.characters[0] = new character(100,100,m)
+// currentState.characters[1] = new character(400,400,m)
 
-socket.onmessage = currentState.updateState
+socket.onmessage = (event) => {
+  let parsed = JSON.parse(event.data)
+  currentState.updateState(parsed)
+}
+
+
+currentState.updateState
 socket.onopen = (x) => {socket.send("aaa")}
 
 
