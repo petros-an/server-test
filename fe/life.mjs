@@ -19,13 +19,14 @@ const update = () => {
     draw(0, 0, "black", width, height);
 
     for (let i = 0; i < currentState.characters.length; i++) {
-      currentState.characters[i].draw(m)
-      
+      currentState.characters[i].draw(m) 
     }
 
     requestAnimationFrame(update);
 };
 
 
-update();
+// update();
 
+let socket = new WebSocket("ws://localhost:8080/echo");
+console.log('yes')
