@@ -17,78 +17,97 @@ import (
 
 var addr = flag.String("addr", "localhost:8080", "http service address")
 
-var upgrader = websocket.Upgrader{} // use default options
-
 func checkOrigin(r *http.Request) bool {
 	return true
 }
 
+type CharacterId string
+
 type Character struct {
-	X int `json:"x"`
-	Y int `json:"y"`
+	X  int `json:"x"`
+	Y  int `json:"y"`
+	Id CharacterId
 }
 
 type GameState struct {
 	Characters []*Character
 }
 
-var gameState GameState
-var playerMap map[int]*Character
-var ID int = 0
-
-func addCharToRandomPosition() *Character {
-	character := Character{X: rand.Intn(300), Y: rand.Intn(300)}
-	gameState.Characters = append(gameState.Characters, &character)
-	return &character
+type StateUpdate struct {
+	NewCharacter Character
 }
 
-func handleStateEndpointConnection(w http.ResponseWriter, r *http.Request) {
-	var upgrader = websocket.Upgrader{
-		ReadBufferSize:  4096,
-		WriteBufferSize: 4096,
-		CheckOrigin:     checkOrigin,
-	}
+func newCharacter(id CharacterId) Character {
+	character := Character{X: rand.Intn(300), Y: rand.Intn(300), Id: id}
+	return character
+}
 
-	c, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		log.Print("upgrade:", err)
-		return
-	}
-	defer c.Close()
+type Endpoint func(http.ResponseWriter, *http.Request)
 
-	newCharacter := addCharToRandomPosition()
-	playerMap[ID] = newCharacter
-	serializedID := serializeJson(&ID)
-	log.Println(ID)
-	ID++
-	err = c.WriteMessage(websocket.TextMessage, serializedID)
-	if err != nil {
-		log.Println("write:", err)
-		return
-	}
-
-	for {
-
-		message := serializeJson(&gameState)
-		err = c.WriteMessage(websocket.TextMessage, message)
-		if err != nil {
-			log.Println("write:", err)
-			break
+func getEndpoint(
+	stateReads chan GameState,
+	stateUpdates chan StateUpdate,
+) Endpoint {
+	endpoint := func(w http.ResponseWriter, r *http.Request) {
+		var upgrader = websocket.Upgrader{
+			ReadBufferSize:  4096,
+			WriteBufferSize: 4096,
+			CheckOrigin:     checkOrigin,
 		}
-		time.Sleep(1 * time.Second)
 
-	}
-}
+		c, err := upgrader.Upgrade(w, r, nil)
+		if err != nil {
+			log.Print("upgrade:", err)
+			return
+		}
+		defer c.Close()
 
-func serializeGameState(gameState *GameState) []byte {
-	type GameStateData struct {
-		CharactersData []Character
+		log.Println("[E] Handling connection ...")
+
+		log.Println("[E] Reading id from client")
+		_, message, err := c.ReadMessage()
+		if err != nil {
+			log.Println("read:", err)
+			return
+		}
+		var id CharacterId = CharacterId(message)
+
+		log.Println("[E] Adding new character")
+
+		stateUpdate := StateUpdate{
+			NewCharacter: newCharacter(id),
+		}
+
+		log.Println(stateUpdate)
+
+		log.Println("[E] Sending state update")
+
+		stateUpdates <- stateUpdate
+
+		// newCharacter := addCharToRandomPosition()
+		// playerMap[ID] = newCharacter
+		// serializedID := serializeJson(&ID)
+		// log.Println(ID)
+		// ID++
+		// err = c.WriteMessage(websocket.TextMessage, serializedID)
+		// if err != nil {
+		// 	log.Println("write:", err)
+		// 	return
+		// }
+		log.Println("[E] Waiting for state reads ...")
+		for newState := range stateReads {
+			log.Println("[E] Sending state to client")
+			message := serializeJson(&newState)
+			err = c.WriteMessage(websocket.TextMessage, message)
+			if err != nil {
+				log.Println("write:", err)
+				break
+			}
+
+		}
 	}
 
-	gameStateData := GameStateData{
-		CharactersData: []Character{},
-	}
-	return serializeJson(&gameStateData)
+	return endpoint
 }
 
 func serializeJson(data interface{}) []byte {
@@ -97,12 +116,57 @@ func serializeJson(data interface{}) []byte {
 }
 
 func main() {
-	flag.Parse()
-	log.SetFlags(0)
-	gameState = GameState{
-		Characters: []*Character{},
-	}
-	playerMap = make(map[int]*Character)
-	http.HandleFunc("/state", handleStateEndpointConnection)
+
+	stateReadChan := make(chan GameState, 100)
+	stateUpdateChan := make(chan StateUpdate, 100)
+	go gameStateMaintainer(stateReadChan, stateUpdateChan, nil)
+	http.HandleFunc(
+		"/state",
+		getEndpoint(stateReadChan, stateUpdateChan),
+	)
 	log.Fatal(http.ListenAndServe(*addr, nil))
+}
+
+func gameStateMaintainer(
+	output chan GameState,
+	input chan StateUpdate,
+	stopper chan bool,
+) {
+	gameState := GameState{
+		Characters: []*Character{
+			{
+				X: 200,
+				Y: 200,
+			},
+		},
+	}
+
+	ticker := time.NewTicker(1 * time.Second)
+
+	for {
+		select {
+		case <-ticker.C:
+			log.Println("[M] Sending new state")
+			log.Println(gameState.Characters)
+			output <- gameState
+		case stateUpdate := <-input:
+			log.Println("[M] Received state update:")
+			gameState = applyStateUpdate(gameState, stateUpdate)
+			log.Println(gameState)
+		default:
+			log.Println("[M] Sleeping")
+			time.Sleep(1000 * time.Millisecond)
+		}
+	}
+}
+
+func applyStateUpdate(oldState GameState, update StateUpdate) GameState {
+	for _, char := range oldState.Characters {
+		if char.Id == update.NewCharacter.Id {
+			return oldState
+		}
+	}
+
+	oldState.Characters = append(oldState.Characters, &update.NewCharacter)
+	return oldState
 }
