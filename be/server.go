@@ -26,7 +26,14 @@ type CharacterId string
 type Character struct {
 	X  int `json:"x"`
 	Y  int `json:"y"`
+	vx int
+	vy int
 	Id CharacterId
+}
+
+func (c *Character) move() {
+	c.X += c.vx
+	c.Y += c.vy
 }
 
 type GameState struct {
@@ -34,12 +41,18 @@ type GameState struct {
 }
 
 type StateUpdate struct {
-	NewCharacter Character
+	NewCharacter   *Character
+	VelocityUpdate *VelocityUpdate
 }
 
-func newCharacter(id CharacterId) Character {
+type VelocityUpdate struct {
+	Vx int
+	Vy int
+}
+
+func newCharacter(id CharacterId) *Character {
 	character := Character{X: rand.Intn(300), Y: rand.Intn(300), Id: id}
-	return character
+	return &character
 }
 
 type Endpoint func(http.ResponseWriter, *http.Request)
@@ -57,14 +70,14 @@ func getEndpoint(
 
 		c, err := upgrader.Upgrade(w, r, nil)
 		if err != nil {
-			log.Print("upgrade:", err)
+			//log.Print("upgrade:", err)
 			return
 		}
 		defer c.Close()
 
-		log.Println("[E] Handling connection ...")
+		//.Println("[E] Handling connection ...")
 
-		log.Println("[E] Reading id from client")
+		//log.Println("[E] Reading id from client")
 		_, message, err := c.ReadMessage()
 		if err != nil {
 			log.Println("read:", err)
@@ -73,14 +86,15 @@ func getEndpoint(
 		var id CharacterId = CharacterId(message)
 
 		log.Println("[E] Adding new character")
+		log.Println(id)
 
 		stateUpdate := StateUpdate{
 			NewCharacter: newCharacter(id),
 		}
 
-		log.Println(stateUpdate)
+		//log.Println(stateUpdate)
 
-		log.Println("[E] Sending state update")
+		//log.Println("[E] Sending state update")
 
 		stateUpdates <- stateUpdate
 
@@ -94,16 +108,15 @@ func getEndpoint(
 		// 	log.Println("write:", err)
 		// 	return
 		// }
-		log.Println("[E] Waiting for state reads ...")
+		//log.Println("[E] Waiting for state reads ...")
 		for newState := range stateReads {
-			log.Println("[E] Sending state to client")
+			//log.Println("[E] Sending state to client")
 			message := serializeJson(&newState)
 			err = c.WriteMessage(websocket.TextMessage, message)
 			if err != nil {
 				log.Println("write:", err)
 				break
 			}
-
 		}
 	}
 
@@ -133,12 +146,7 @@ func gameStateMaintainer(
 	stopper chan bool,
 ) {
 	gameState := GameState{
-		Characters: []*Character{
-			{
-				X: 200,
-				Y: 200,
-			},
-		},
+		Characters: []*Character{},
 	}
 
 	ticker := time.NewTicker(1 * time.Second)
@@ -146,27 +154,28 @@ func gameStateMaintainer(
 	for {
 		select {
 		case <-ticker.C:
-			log.Println("[M] Sending new state")
-			log.Println(gameState.Characters)
+			//log.Println("[M] Sending new state")
+			//log.Println(gameState.Characters)
 			output <- gameState
 		case stateUpdate := <-input:
-			log.Println("[M] Received state update:")
+			//log.Println("[M] Received state update:")
 			gameState = applyStateUpdate(gameState, stateUpdate)
-			log.Println(gameState)
+			//log.Println(gameState)
 		default:
-			log.Println("[M] Sleeping")
+			//log.Println("[M] Sleeping")
 			time.Sleep(1000 * time.Millisecond)
 		}
 	}
 }
 
 func applyStateUpdate(oldState GameState, update StateUpdate) GameState {
+
 	for _, char := range oldState.Characters {
 		if char.Id == update.NewCharacter.Id {
 			return oldState
 		}
 	}
 
-	oldState.Characters = append(oldState.Characters, &update.NewCharacter)
+	oldState.Characters = append(oldState.Characters, update.NewCharacter)
 	return oldState
 }

@@ -14,10 +14,7 @@ function draw(x, y, c, w, h) {
 const socket = new WebSocket("ws://localhost:8080/state");
 const api = new Api(socket)
 
-let ID;
 const currentState = new State(m, 'mainstate')
-// currentState.characters[0] = new character(100,100,m)
-// currentState.characters[1] = new character(400,400,m)
 
 socket.onmessage = (event) => {
     let parsed = JSON.parse(event.data)
@@ -31,7 +28,9 @@ socket.onmessage = (event) => {
 }
 
 currentState.updateState
-socket.onopen = (x) => { socket.send("aaa") }
+const ID =  (Math.random() + 1).toString(16).substring(2);
+console.log(ID)
+socket.onopen = (x) => { socket.send(ID) }
 
 const pressedKeys = {};
 window.onkeyup = function (e) { pressedKeys[e.key] = false; }
