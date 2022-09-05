@@ -34,10 +34,10 @@ socket.onopen = (x) => {socket.send("aaa")}
 const pressedKeys = {};
 window.onkeyup = function(e) { pressedKeys[e.key] = false; }
 window.onkeydown = function(e) { pressedKeys[e.key] = true; }
-playerController = new PlayerController(pressedKeys, socket)
+const playerController = new PlayerController(pressedKeys, socket)
 
 const update = () => {
-    PlayerController.checkPlayerIntput()
+    playerController.checkPlayerIntput()
     render()
     requestAnimationFrame(update);
 };
