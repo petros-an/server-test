@@ -10,7 +10,7 @@ function draw (x, y, c, w, h) {
   m.fillRect(x, y, w, h);
 };
 
-let socket = new WebSocket("ws://localhost:8080/state");
+const socket = new WebSocket("ws://localhost:8080/state");
 let ID;
 const currentState = new State(m, 'mainstate')
 // currentState.characters[0] = new character(100,100,m)
@@ -34,19 +34,21 @@ socket.onopen = (x) => {socket.send("aaa")}
 const pressedKeys = {};
 window.onkeyup = function(e) { pressedKeys[e.key] = false; }
 window.onkeydown = function(e) { pressedKeys[e.key] = true; }
-playerController = new PlayerController(pressedKeys)
+playerController = new PlayerController(pressedKeys, socket)
 
 const update = () => {
     PlayerController.checkPlayerIntput()
+    render()
+    requestAnimationFrame(update);
+};
+
+function render(){
     m.clearRect(0, 0, width, height);
     draw(0, 0, "black", width, height);
 
     for (let i = 0; i < currentState.characters.length; i++) {
       currentState.characters[i].draw(m)
     }
-
-    requestAnimationFrame(update);
-};
-
+}
 
 update();

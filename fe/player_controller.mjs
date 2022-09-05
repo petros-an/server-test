@@ -1,10 +1,12 @@
 export class PlayerController{
 
-    constructor(pressedKeys){
+    constructor(pressedKeys, socket){
         this.pressedKeys = pressedKeys
+        this.socket = socket
     }
 
     checkPlayerIntput(){
+        let x, y
         if(this.pressedKeys["w"]){
             console.log("up")
         }
@@ -17,5 +19,6 @@ export class PlayerController{
         if(this.pressedKeys["d"]){
             console.log("right")
         }
+        
     }
 }
