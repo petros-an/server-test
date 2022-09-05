@@ -1,24 +1,31 @@
-export class PlayerController{
+import { Vector2D } from "./Libs/Math/vector.mjs"
 
-    constructor(pressedKeys, socket){
+export class PlayerController {
+
+    constructor(pressedKeys, api) {
         this.pressedKeys = pressedKeys
-        this.socket = socket
+        this.api = api
     }
 
-    checkPlayerIntput(){
-        let x, y
-        if(this.pressedKeys["w"]){
-            console.log("up")
+    checkPlayerIntput() {
+        let direction = new Vector2D(0, 0)
+        if (this.pressedKeys["w"]) {
+            direction.y++
         }
-        if(this.pressedKeys["s"]){
-            console.log("down")
+        if (this.pressedKeys["s"]) {
+            direction.y--
         }
-        if(this.pressedKeys["a"]){
-            console.log("left")
+        if (this.pressedKeys["a"]) {
+            direction.x--
         }
-        if(this.pressedKeys["d"]){
-            console.log("right")
+        if (this.pressedKeys["d"]) {
+            direction.x++
         }
         
+        direction.normalize()
+
+        if (!direction.equals(0, 0)){
+            this.api.playerMoveInput(direction)
+        }
     }
 }

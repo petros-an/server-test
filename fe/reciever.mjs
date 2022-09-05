@@ -1,4 +1,4 @@
 
-export const convertStateStream = (stream) =>{
-    
+export const convertStateStream = (stream) => {
+
 }
