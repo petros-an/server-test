@@ -1,4 +1,5 @@
 import {State} from './state.mjs';
+import {checkPlayerIntput} from './player_controls.mjs';
 
 const m = document.getElementById("life").getContext("2d");
 const width = 800
@@ -17,10 +18,9 @@ const currentState = new State(m, 'mainstate')
 
 socket.onmessage = (event) => {
   let parsed = JSON.parse(event.data)
-  console.log(parsed)
   if (!isNaN(parsed)){
     ID = parsed
-    console.log("ID: ", ID)
+    //console.log("ID: ", ID)
   }
   else
   {
@@ -32,11 +32,13 @@ socket.onmessage = (event) => {
 currentState.updateState
 socket.onopen = (x) => {socket.send("aaa")}
 
-var pressedKeys = {};
-window.onkeyup = function(e) { pressedKeys[e.keyCode] = false; }
-window.onkeydown = function(e) { pressedKeys[e.keyCode] = true; }
+const pressedKeys = {};
+window.onkeyup = function(e) { pressedKeys[e.key] = false; }
+window.onkeydown = function(e) { pressedKeys[e.key] = true; }
+
 
 const update = () => {
+    checkPlayerIntput(pressedKeys)
     m.clearRect(0, 0, width, height);
     draw(0, 0, "black", width, height);
 
