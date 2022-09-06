@@ -40,7 +40,7 @@ type GameState struct {
 	Characters []*Character
 }
 
-type StateUpdate struct {
+type StateInput struct {
 	NewCharacter   *Character
 	VelocityUpdate *VelocityUpdate
 }
@@ -59,7 +59,7 @@ type Endpoint func(http.ResponseWriter, *http.Request)
 
 func getEndpoint(
 	stateReads chan GameState,
-	stateUpdates chan StateUpdate,
+	stateInputs chan StateInput,
 ) Endpoint {
 	endpoint := func(w http.ResponseWriter, r *http.Request) {
 		var upgrader = websocket.Upgrader{
@@ -88,27 +88,16 @@ func getEndpoint(
 		log.Println("[E] Adding new character")
 		log.Println(id)
 
-		stateUpdate := StateUpdate{
+		input := StateInput{
 			NewCharacter: newCharacter(id),
 		}
 
 		//log.Println(stateUpdate)
 
-		//log.Println("[E] Sending state update")
+		//log.Println("[E] Sending client state update")
 
-		stateUpdates <- stateUpdate
+		stateInputs <- input
 
-		// newCharacter := addCharToRandomPosition()
-		// playerMap[ID] = newCharacter
-		// serializedID := serializeJson(&ID)
-		// log.Println(ID)
-		// ID++
-		// err = c.WriteMessage(websocket.TextMessage, serializedID)
-		// if err != nil {
-		// 	log.Println("write:", err)
-		// 	return
-		// }
-		//log.Println("[E] Waiting for state reads ...")
 		for newState := range stateReads {
 			//log.Println("[E] Sending state to client")
 			message := serializeJson(&newState)
@@ -131,7 +120,7 @@ func serializeJson(data interface{}) []byte {
 func main() {
 
 	stateReadChan := make(chan GameState, 100)
-	stateUpdateChan := make(chan StateUpdate, 100)
+	stateUpdateChan := make(chan StateInput, 100)
 	go gameStateMaintainer(stateReadChan, stateUpdateChan, nil)
 	http.HandleFunc(
 		"/state",
@@ -142,7 +131,7 @@ func main() {
 
 func gameStateMaintainer(
 	output chan GameState,
-	input chan StateUpdate,
+	input chan StateInput,
 	stopper chan bool,
 ) {
 	gameState := GameState{
@@ -168,7 +157,7 @@ func gameStateMaintainer(
 	}
 }
 
-func applyStateUpdate(oldState GameState, update StateUpdate) GameState {
+func applyStateUpdate(oldState GameState, update StateInput) GameState {
 
 	for _, char := range oldState.Characters {
 		if char.Id == update.NewCharacter.Id {
