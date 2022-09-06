@@ -10,6 +10,37 @@ import (
 
 type Endpoint func(http.ResponseWriter, *http.Request)
 
+type ClientInput struct {
+	Velocity struct {
+		VX int
+		VY int
+	}
+}
+
+func readStateInputs(inputsChan chan StateInput, conn *websocket.Conn) {
+	for {
+		_, message, err := conn.ReadMessage()
+		if err != nil {
+			log.Println("read:", err)
+			return
+		}
+		var input ClientInput
+		err = parseJson(message, &input)
+		if err != nil {
+			log.Println(err)
+		} else {
+			inputsChan <- StateInput{
+				VelocityUpdate: &VelocityUpdate{
+					Vx: input.Velocity.VX,
+					Vy: input.Velocity.VY,
+				},
+			}
+		}
+
+	}
+
+}
+
 func getEndpoint(
 	stateReads chan GameState,
 	stateInputs chan StateInput,
@@ -53,6 +84,8 @@ func getEndpoint(
 
 		stateInputs <- input
 
+		go readStateInputs(stateInputs, c)
+
 		for newState := range stateReads {
 			//log.Println("[E] Sending state to client")
 			message := serializeJson(&newState)
@@ -70,4 +103,9 @@ func getEndpoint(
 func serializeJson(data interface{}) []byte {
 	res, _ := json.Marshal(data)
 	return res
+}
+
+func parseJson(data []byte, dst interface{}) error {
+	err := json.Unmarshal(data, dst)
+	return err
 }
