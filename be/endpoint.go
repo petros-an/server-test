@@ -17,7 +17,7 @@ type ClientInput struct {
 	}
 }
 
-func readStateInputs(inputsChan chan StateInput, conn *websocket.Conn) {
+func readStateInputsFromConnection(inputsChan chan StateInput, conn *websocket.Conn) {
 	for {
 		_, message, err := conn.ReadMessage()
 		if err != nil {
@@ -36,9 +36,46 @@ func readStateInputs(inputsChan chan StateInput, conn *websocket.Conn) {
 				},
 			}
 		}
+	}
+}
 
+func sendStateToConnection(stateReads chan GameState, conn *websocket.Conn) {
+	for newState := range stateReads {
+		//log.Println("[E] Sending state to client")
+		message := serializeJson(&newState)
+		err := conn.WriteMessage(websocket.TextMessage, message)
+		if err != nil {
+			log.Println("write:", err)
+			break
+		}
+	}
+}
+
+func readNewCharacterFromConnection(inputsChan chan StateInput, conn *websocket.Conn) {
+
+	_, message, err := conn.ReadMessage()
+	if err != nil {
+		log.Println("read:", err)
+		return
+	}
+	var id CharacterId = CharacterId(message)
+
+	log.Println("[E] Adding new character")
+	log.Println(id)
+
+	input := StateInput{
+		NewCharacter: newCharacter(id),
 	}
 
+	inputsChan <- input
+}
+
+var upgrader = websocket.Upgrader{
+	ReadBufferSize:  4096,
+	WriteBufferSize: 4096,
+	CheckOrigin: func(r *http.Request) bool {
+		return true
+	},
 }
 
 func getEndpoint(
@@ -46,55 +83,20 @@ func getEndpoint(
 	stateInputs chan StateInput,
 ) Endpoint {
 	endpoint := func(w http.ResponseWriter, r *http.Request) {
-		var upgrader = websocket.Upgrader{
-			ReadBufferSize:  4096,
-			WriteBufferSize: 4096,
-			CheckOrigin: func(r *http.Request) bool {
-				return true
-			},
-		}
 
 		c, err := upgrader.Upgrade(w, r, nil)
 		if err != nil {
-			//log.Print("upgrade:", err)
+			log.Print("upgrade:", err)
 			return
 		}
 		defer c.Close()
 
-		//.Println("[E] Handling connection ...")
+		readNewCharacterFromConnection(stateInputs, c)
 
-		//log.Println("[E] Reading id from client")
-		_, message, err := c.ReadMessage()
-		if err != nil {
-			log.Println("read:", err)
-			return
-		}
-		var id CharacterId = CharacterId(message)
+		go readStateInputsFromConnection(stateInputs, c)
 
-		log.Println("[E] Adding new character")
-		log.Println(id)
+		sendStateToConnection(stateReads, c)
 
-		input := StateInput{
-			NewCharacter: newCharacter(id),
-		}
-
-		//log.Println(stateUpdate)
-
-		//log.Println("[E] Sending client state update")
-
-		stateInputs <- input
-
-		go readStateInputs(stateInputs, c)
-
-		for newState := range stateReads {
-			//log.Println("[E] Sending state to client")
-			message := serializeJson(&newState)
-			err = c.WriteMessage(websocket.TextMessage, message)
-			if err != nil {
-				log.Println("write:", err)
-				break
-			}
-		}
 	}
 
 	return endpoint

@@ -26,21 +26,21 @@ func gameStateMaintainer(
 		Characters: []*Character{},
 	}
 
-	ticker := time.NewTicker(1 * time.Second)
+	outputTicker := time.NewTicker(1 * time.Second)
+	gameLoopTicker := time.NewTicker(100 * time.Millisecond)
 
 	for {
 		select {
-		case <-ticker.C:
+		case <-outputTicker.C:
 			//log.Println("[M] Sending new state")
 			//log.Println(gameState.Characters)
 			output <- gameState
-		case stateUpdate := <-input:
+		case stateInput := <-input:
 			//log.Println("[M] Received state update:")
-			gameState = applyStateUpdate(gameState, stateUpdate)
+			gameState = applyStateUpdate(gameState, stateInput)
 			//log.Println(gameState)
-		default:
-			//log.Println("[M] Sleeping")
-			time.Sleep(1000 * time.Millisecond)
+		case <-gameLoopTicker.C:
+			gameState = applyGameLoopUpdate(gameState)
 		}
 	}
 }
@@ -80,4 +80,11 @@ func applyStateUpdate(oldState GameState, input StateInput) GameState {
 
 	return state
 
+}
+
+func applyGameLoopUpdate(state GameState) GameState {
+	for _, c := range state.Characters {
+		c.move()
+	}
+	return state
 }
