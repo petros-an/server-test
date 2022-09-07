@@ -5,8 +5,15 @@ export class Api {
     }
 
 
-    playerMoveInput(direction){
-        console.log(""+direction)
+    playerMoveInput(direction) {
+        let message = JSON.stringify({
+            "Velocity": {
+                "VX": direction.x, "VY": direction.y
+            }
+        })
+        this.message = message
     }
 
+
 }
+

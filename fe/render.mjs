@@ -9,7 +9,7 @@ const widthToHeightRatio = width / height
 const widthDiv2 = width / 2
 const heightDiv2 = height / 2
 
-const worldWidth = 400
+const worldWidth = 80
 const worldHeight = worldWidth / widthToHeightRatio
 const pixelToWorldRatio = width / worldWidth
 const worldOriginOnCanvasRatio = new Vector2D(0.5, 0.5)
@@ -30,14 +30,14 @@ function draw(x, y, c, w, h) {
 
 
 function worldToCanvas(worldPosition) {
-    return worldPosition.add(worldOriginOnCanvasRatio.mul(width, height).div(pixelToWorldRatio)).mul(pixelToWorldRatio)
+    let pixelPos = worldPosition.add(worldOriginOnCanvasRatio.mul(width, height).div(pixelToWorldRatio)).mul(pixelToWorldRatio)
+    pixelPos.y = height - pixelPos.y
+    return pixelPos
 }
 
 
 function drawCharacter(character) {
     character.m.fillStyle = "red";
-    console.log("world: " + character.position)
     let pos = worldToCanvas(character.position)
-    console.log("canvas: " + pos)
     character.m.fillRect(pos.x, pos.y, 10, 10);
 }

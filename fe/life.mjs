@@ -21,9 +21,28 @@ socket.onmessage = (event) => {
     }
 }
 
-const ID =  (Math.random() + 1).toString(16).substring(2);
+const ID = (Math.random() + 1).toString(16).substring(2);
 console.log(ID)
-socket.onopen = (x) => { socket.send(ID) }
+
+const sendTicker = 0.1
+socket.onopen = (x) => {
+    socket.send(ID)
+    sendRepeat()
+}
+
+function sleep(time) {
+    return new Promise((resolve) => setTimeout(resolve, time));
+}
+
+const sendRepeat = () => {
+    while (true) {
+        if (api.message != undefined) {
+            socket.send(api.message)
+            sleep(sendTicker * 1000).then(sendRepeat)
+            return;
+        }
+    }
+}
 
 const pressedKeys = {};
 window.onkeyup = function (e) { pressedKeys[e.key] = false; }

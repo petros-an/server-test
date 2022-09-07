@@ -2,24 +2,28 @@ package main
 
 import (
 	"math/rand"
+	"time"
 )
 
 type CharacterId string
 
 type Character struct {
-	X  int `json:"x"`
-	Y  int `json:"y"`
-	VX int
-	VY int
+	X  float32 `json:"x"`
+	Y  float32 `json:"y"`
+	VX float32
+	VY float32
 	Id CharacterId
 }
 
+const VelMagnitude float32 = 10
+
 func (c *Character) move() {
-	c.X += c.VX
-	c.Y += c.VY
+	c.X += c.VX * DT * VelMagnitude
+	c.Y += c.VY * DT * VelMagnitude
 }
 
 func newCharacter(id CharacterId) *Character {
-	character := Character{X: rand.Intn(400) - 200, Y: rand.Intn(400) - 200, Id: id}
+	rand.Seed(time.Now().UTC().UnixNano())
+	character := Character{X: rand.Float32()*80 - 40, Y: rand.Float32()*80 - 40, Id: id}
 	return &character
 }

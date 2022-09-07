@@ -12,7 +12,7 @@ type GameState struct {
 func (s GameState) Repr() string {
 	str := ""
 	for _, c := range s.Characters {
-		str += fmt.Sprintf("[x:%d, y:%d, vx: %d, vy: %d, id: %s],", c.X, c.Y, c.VX, c.VY, c.Id)
+		str += fmt.Sprintf("[x:%f, y:%f, vx: %f, vy: %f, id: %s],", c.X, c.Y, c.VX, c.VY, c.Id)
 	}
 	return str
 }
@@ -24,9 +24,14 @@ type StateInput struct {
 
 type VelocityUpdate struct {
 	CharacterId CharacterId
-	Vx          int
-	Vy          int
+	Vx          float32
+	Vy          float32
 }
+
+const FPS = 50.0
+const DT = 1 / FPS
+
+const sendTickerSeconds = 0.05
 
 func gameStateMaintainer(
 	output chan GameState,
@@ -37,8 +42,8 @@ func gameStateMaintainer(
 		Characters: []*Character{},
 	}
 
-	outputTicker := time.NewTicker(1 * time.Second)
-	gameLoopTicker := time.NewTicker(100 * time.Millisecond)
+	outputTicker := time.NewTicker(time.Duration(int64(sendTickerSeconds*1000)) * time.Millisecond)
+	gameLoopTicker := time.NewTicker(time.Duration(int64(DT*1000)) * time.Millisecond)
 
 	for {
 		select {
@@ -70,13 +75,13 @@ func applyNewCharacterUpdate(oldState GameState, newCharacter Character) GameSta
 func applyVelocityUpdate(oldState GameState, velUpdate VelocityUpdate) GameState {
 	for _, char := range oldState.Characters {
 		if char.Id == velUpdate.CharacterId {
-			char.VX += velUpdate.Vx
-			char.VY += velUpdate.Vy
+			char.VX = velUpdate.Vx
+			char.VY = velUpdate.Vy
 			break
 		}
 	}
 
-	fmt.Println(oldState.Repr())
+	//fmt.Println(oldState.Repr())
 	return oldState
 }
 

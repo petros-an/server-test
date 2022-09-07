@@ -24,8 +24,6 @@ export class PlayerController {
         
         direction.normalize()
 
-        if (!direction.equals(0, 0)){
-            this.api.playerMoveInput(direction)
-        }
+        this.api.playerMoveInput(direction)
     }
 }

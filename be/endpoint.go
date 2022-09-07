@@ -12,8 +12,8 @@ type Endpoint func(http.ResponseWriter, *http.Request)
 
 type ClientInput struct {
 	Velocity struct {
-		VX int
-		VY int
+		VX float32
+		VY float32
 	}
 }
 
