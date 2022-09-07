@@ -17,7 +17,7 @@ type ClientInput struct {
 	}
 }
 
-func readStateInputsFromConnection(inputsChan chan StateInput, conn *websocket.Conn) {
+func readStateInputsFromConnection(inputsChan chan StateInput, conn *websocket.Conn, charId CharacterId) {
 	for {
 		_, message, err := conn.ReadMessage()
 		if err != nil {
@@ -31,8 +31,9 @@ func readStateInputsFromConnection(inputsChan chan StateInput, conn *websocket.C
 		} else {
 			inputsChan <- StateInput{
 				VelocityUpdate: &VelocityUpdate{
-					Vx: input.Velocity.VX,
-					Vy: input.Velocity.VY,
+					CharacterId: charId,
+					Vx:          input.Velocity.VX,
+					Vy:          input.Velocity.VY,
 				},
 			}
 		}
@@ -51,23 +52,19 @@ func sendStateToConnection(stateReads chan GameState, conn *websocket.Conn) {
 	}
 }
 
-func readNewCharacterFromConnection(inputsChan chan StateInput, conn *websocket.Conn) {
+func readIDFromConnection(conn *websocket.Conn) CharacterId {
 
 	_, message, err := conn.ReadMessage()
 	if err != nil {
 		log.Println("read:", err)
-		return
+		return ""
 	}
 	var id CharacterId = CharacterId(message)
 
 	log.Println("[E] Adding new character")
 	log.Println(id)
 
-	input := StateInput{
-		NewCharacter: newCharacter(id),
-	}
-
-	inputsChan <- input
+	return id
 }
 
 var upgrader = websocket.Upgrader{
@@ -91,9 +88,14 @@ func getEndpoint(
 		}
 		defer c.Close()
 
-		readNewCharacterFromConnection(stateInputs, c)
+		characterId := readIDFromConnection(c)
+		input := StateInput{
+			NewCharacter: newCharacter(characterId),
+		}
 
-		go readStateInputsFromConnection(stateInputs, c)
+		stateInputs <- input
+
+		go readStateInputsFromConnection(stateInputs, c, characterId)
 
 		sendStateToConnection(stateReads, c)
 

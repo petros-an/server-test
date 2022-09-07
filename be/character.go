@@ -1,20 +1,22 @@
 package main
 
-import "math/rand"
+import (
+	"math/rand"
+)
 
 type CharacterId string
 
 type Character struct {
 	X  int `json:"x"`
 	Y  int `json:"y"`
-	vx int
-	vy int
+	VX int
+	VY int
 	Id CharacterId
 }
 
 func (c *Character) move() {
-	c.X += c.vx
-	c.Y += c.vy
+	c.X += c.VX
+	c.Y += c.VY
 }
 
 func newCharacter(id CharacterId) *Character {

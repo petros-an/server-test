@@ -1,9 +1,20 @@
 package main
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 type GameState struct {
 	Characters []*Character
+}
+
+func (s GameState) Repr() string {
+	str := ""
+	for _, c := range s.Characters {
+		str += fmt.Sprintf("[x:%d, y:%d, vx: %d, vy: %d, id: %s],", c.X, c.Y, c.VX, c.VY, c.Id)
+	}
+	return str
 }
 
 type StateInput struct {
@@ -36,7 +47,8 @@ func gameStateMaintainer(
 			//log.Println(gameState.Characters)
 			output <- gameState
 		case stateInput := <-input:
-			//log.Println("[M] Received state update:")
+			// log.Printf("[M] Received state update ")
+			// log.Println(stateInput)
 			gameState = applyStateUpdate(gameState, stateInput)
 			//log.Println(gameState)
 		case <-gameLoopTicker.C:
@@ -58,11 +70,13 @@ func applyNewCharacterUpdate(oldState GameState, newCharacter Character) GameSta
 func applyVelocityUpdate(oldState GameState, velUpdate VelocityUpdate) GameState {
 	for _, char := range oldState.Characters {
 		if char.Id == velUpdate.CharacterId {
-			char.vx += velUpdate.Vx
-			char.vy += velUpdate.Vy
+			char.VX += velUpdate.Vx
+			char.VY += velUpdate.Vy
 			break
 		}
 	}
+
+	fmt.Println(oldState.Repr())
 	return oldState
 }
 
