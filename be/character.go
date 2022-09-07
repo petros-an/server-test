@@ -18,6 +18,6 @@ func (c *Character) move() {
 }
 
 func newCharacter(id CharacterId) *Character {
-	character := Character{X: rand.Intn(300), Y: rand.Intn(300), Id: id}
+	character := Character{X: rand.Intn(400) - 200, Y: rand.Intn(400) - 200, Id: id}
 	return &character
 }

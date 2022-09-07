@@ -1,4 +1,4 @@
-import { character } from './character.mjs';
+import { Character } from './character.mjs';
 import { convertStateStream } from './reciever.mjs';
 
 export class State {
@@ -17,7 +17,7 @@ export class State {
         this.characters = []
         for (let i = 0; i < parsed['Characters'].length; i++) {
             let characterData = parsed['Characters'][i]
-            this.characters[i] = new character(characterData['x'], characterData['y'], this.m)
+            this.characters[i] = new Character(characterData['x'], characterData['y'], this.m)
         }
     }
 
