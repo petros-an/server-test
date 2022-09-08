@@ -11,7 +11,10 @@ import (
 type Endpoint func(http.ResponseWriter, *http.Request)
 
 type ClientInput struct {
-	Velocity Vector2D
+	Velocity struct {
+		VX float64
+		VY float64
+	}
 }
 
 func readStateInputsFromConnection(inputsChan chan StateInput, conn *websocket.Conn, charId CharacterId) {
@@ -29,7 +32,7 @@ func readStateInputsFromConnection(inputsChan chan StateInput, conn *websocket.C
 			inputsChan <- StateInput{
 				VelocityUpdate: &VelocityUpdate{
 					CharacterId: charId,
-					Velocity:    Vector2D{X: input.Velocity.X, Y: input.Velocity.Y},
+					Velocity:    Vector2D{X: input.Velocity.VX, Y: input.Velocity.VY},
 				},
 			}
 		}
