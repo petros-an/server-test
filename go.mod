@@ -1,4 +1,4 @@
-module example/go
+module github.com/petros-an/server-test
 
 go 1.19
 
