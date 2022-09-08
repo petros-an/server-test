@@ -17,7 +17,7 @@ export class State {
         this.characters = []
         for (let i = 0; i < parsed['Characters'].length; i++) {
             let characterData = parsed['Characters'][i]
-            this.characters[i] = new Character(characterData['x'], characterData['y'], this.m)
+            this.characters[i] = new Character(characterData['Position']['x'], characterData['Position']['y'], this.m)
         }
     }
 

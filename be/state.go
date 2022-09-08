@@ -12,7 +12,7 @@ type GameState struct {
 func (s GameState) Repr() string {
 	str := ""
 	for _, c := range s.Characters {
-		str += fmt.Sprintf("[x:%f, y:%f, vx: %f, vy: %f, id: %s],", c.X, c.Y, c.VX, c.VY, c.Id)
+		str += fmt.Sprintf("[x:%f, y:%f, vx: %f, vy: %f, id: %s],", c.Position.X, c.Position.Y, c.Velocity.X, c.Velocity.Y, c.Id)
 	}
 	return str
 }
@@ -24,8 +24,7 @@ type StateInput struct {
 
 type VelocityUpdate struct {
 	CharacterId CharacterId
-	Vx          float32
-	Vy          float32
+	Velocity    Vector2D
 }
 
 const FPS = 50.0
@@ -75,8 +74,7 @@ func applyNewCharacterUpdate(oldState GameState, newCharacter Character) GameSta
 func applyVelocityUpdate(oldState GameState, velUpdate VelocityUpdate) GameState {
 	for _, char := range oldState.Characters {
 		if char.Id == velUpdate.CharacterId {
-			char.VX = velUpdate.Vx
-			char.VY = velUpdate.Vy
+			char.Velocity = velUpdate.Velocity
 			break
 		}
 	}
