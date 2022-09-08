@@ -3,8 +3,12 @@ import uuid
 import json
 
 def listen():
-    ws = websocket.create_connection("ws://localhost:8080/state")
+    url = 'wss://still-citadel-50381.herokuapp.com:8080'
+    # url = 'ws://localhost:8080/state'
+    print('connecting...')
+    ws = websocket.create_connection(url)
 
+    print('sending id')
     ws.send(str(uuid.uuid4()))
 
     while True:

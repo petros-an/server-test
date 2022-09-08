@@ -1,12 +1,12 @@
 package main
 
 import (
-	"flag"
 	"log"
 	"net/http"
+	"os"
 )
 
-var addr = flag.String("addr", "localhost:8080", "http service address")
+var addr = ":" + os.Getenv("PORT")
 
 func main() {
 
@@ -19,6 +19,6 @@ func main() {
 		"/state",
 		getEndpoint(stateReadChan, stateUpdateChan),
 	)
-
-	log.Fatal(http.ListenAndServe(*addr, nil))
+	log.Println("Starting server on " + addr)
+	log.Fatal(http.ListenAndServe(addr, nil))
 }

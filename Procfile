@@ -1,1 +1,1 @@
-web: go
+web: bin/server-test
