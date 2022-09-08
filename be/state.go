@@ -30,7 +30,7 @@ type VelocityUpdate struct {
 const FPS = 50.0
 const DT = 1 / FPS
 
-const sendTickerSeconds = 0.05
+const sendTickerSeconds = 0.01
 
 func gameStateMaintainer(
 	output chan GameState,

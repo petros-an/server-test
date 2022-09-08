@@ -24,7 +24,7 @@ socket.onmessage = (event) => {
 const ID = (Math.random() + 1).toString(16).substring(2);
 console.log(ID)
 
-const sendTicker = 0.1
+const sendTicker = 0.03
 socket.onopen = (x) => {
     socket.send(ID)
     sendRepeat()
