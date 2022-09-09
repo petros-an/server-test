@@ -82,13 +82,21 @@ Vector2D.prototype.subSelf = function (arg1, arg2) {
     if (arg2 == undefined) {
         this.x -= arg1.x
         this.y -= arg1.y
-        return this
     }
     else {
         this.x -= arg1
         this.y -= arg2
-        return this
     }
+    return this
+}
+
+Vector2D.prototype.opp = function () {
+    return new Vector2D(-this.x, -this.y)
+}
+
+Vector2D.prototype.oppSelf = function () {
+    this.x, this.y = -this.x, -this.y
+    return this
 }
 
 Vector2D.prototype.mul = function (arg1, arg2) {
@@ -141,12 +149,10 @@ Vector2D.prototype.mulC = function (arg1, arg2) {
 
 Vector2D.prototype.mulCSelf = function (arg1, arg2) {
     if (arg2 == undefined) {
-        this.x = this.x * arg1.x - this.y * arg1.y
-        this.y = this.x * arg1.y + this.y * arg1.x
+        this.x, this.y = this.x * arg1.x - this.y * arg1.y, this.x * arg1.y + this.y * arg1.x
     }
     else {
-        this.x = this.x * arg1 - this.y * arg2
-        this.y = this.x * arg2 + this.y * arg1
+        this.x, this.y = this.x * arg1 - this.y * arg2, this.x * arg2 + this.y * arg1
     }
     return this
 }
@@ -157,12 +163,10 @@ Vector2D.prototype.mulConj = function (arg1, arg2) {
 
 Vector2D.prototype.mulConjSelf = function (arg1, arg2) {
     if (arg2 == undefined) {
-        this.x = this.x * arg1.x + this.y * arg1.y
-        this.y = this.x * arg1.y - this.y * arg1.x
+        this.x, this.y = this.x * arg1.x + this.y * arg1.y, this.x * arg1.y - this.y * arg1.x
     }
     else {
-        this.x = this.x * arg1 + this.y * arg2
-        this.y = this.x * arg2 - this.y * arg1
+        this.x, this.y = this.x * arg1 + this.y * arg2, this.x * arg2 - this.y * arg1
     }
     return this
 }
@@ -173,14 +177,21 @@ Vector2D.prototype.divC = function (arg1, arg2) {
 
 Vector2D.prototype.divCSelf = function (arg1, arg2) {
     if (arg2 == undefined) {
-        this.x = this.x * arg1.x + this.y * arg1.y
-        this.y = this.x * arg1.y - this.y * arg1.x
+        this.x, this.y = this.x * arg1.x + this.y * arg1.y, this.x * arg1.y - this.y * arg1.x
         this.div(arg1.magnitudeSq)
     }
     else {
-        this.x = this.x * arg1 + this.y * arg2
-        this.y = this.x * arg2 - this.y * arg1
+        this.x, this.y = this.x * arg1 + this.y * arg2, this.x * arg2 - this.y * arg1
         this.div(arg1 * arg1 + arg2 * arg2)
     }
+    return this
+}
+
+Vector2D.prototype.rotate90 = function () {
+    return new Vector2D(-this.y, this.x)
+}
+
+Vector2D.prototype.rotate90Self = function () {
+    this.x, this.y = -this.y, this.x
     return this
 }
