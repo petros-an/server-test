@@ -5,7 +5,10 @@ import { render, m } from './render.mjs';
 
 
 
-const socket = new WebSocket("ws://localhost:8080/state");
+// const url = "ws://still-citadel-50381.herokuapp.com/state"
+// const url = "ws://141.255.13.223:8080/state"
+const url = "ws://localhost:8080/state"
+const socket = new WebSocket(url);
 const api = new Api(socket)
 
 const currentState = new State(m, 'mainstate')

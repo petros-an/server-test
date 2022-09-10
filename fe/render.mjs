@@ -37,7 +37,7 @@ function worldToCanvas(worldPosition) {
 
 
 function drawCharacter(character) {
-    character.m.fillStyle = "red";
+    character.m.fillStyle = `rgb(${character.color.R}, ${character.color.G}, ${character.color.B})`;
     let pos = worldToCanvas(character.position)
     character.m.fillRect(pos.x, pos.y, 10, 10);
 }
