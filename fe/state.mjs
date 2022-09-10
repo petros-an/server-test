@@ -18,8 +18,8 @@ export class State {
         for (let i = 0; i < parsed['Characters'].length; i++) {
             let characterData = parsed['Characters'][i]
             this.characters[i] = new Character(
-                characterData['Position']['x'],
-                characterData['Position']['y'],
+                characterData['RigidBody']['Position']['x'],
+                characterData['RigidBody']['Position']['y'],
                 characterData['Color'],
                 this.m
             )

@@ -6,7 +6,8 @@ import (
 	"os"
 )
 
-var addr = ":" + os.Getenv("PORT")
+var port = os.Getenv("PORT")
+var addr = ":" + getPort(os.Getenv("PORT"))
 
 func main() {
 
@@ -21,4 +22,11 @@ func main() {
 	)
 	log.Println("Starting server on " + addr)
 	log.Fatal(http.ListenAndServe(addr, nil))
+}
+
+func getPort(port string) string {
+	if port == "" {
+		return "8080"
+	}
+	return port
 }
