@@ -17,11 +17,18 @@ const worldOriginOnCanvasRatio = new Vector2D(0.5, 0.5)
 
 export function render(currentState) {
     m.clearRect(0, 0, width, height);
-    draw(0, 0, "black", width, height);
+    drawWorld(m)
 
     for (let i = 0; i < currentState.characters.length; i++) {
         drawCharacter(currentState.characters[i])
     }
+}
+
+function drawWorld(m) {
+    const img = document.getElementById('world')
+    m.drawImage(
+        img, 0, 0
+    )
 }
 
 function draw(x, y, c, w, h) {
