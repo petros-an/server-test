@@ -14,9 +14,11 @@ type RGBColor struct {
 }
 
 type Character struct {
-	RigidBody RigidBody2D
-	Id        CharacterId
-	Color     RGBColor
+	RigidBody     RigidBody2D
+	MoveDirection Vector2D
+	speed         float64
+	Id            CharacterId
+	Color         RGBColor
 }
 
 func newCharacter(position Vector2D, id CharacterId, color RGBColor) *Character {
@@ -24,13 +26,17 @@ func newCharacter(position Vector2D, id CharacterId, color RGBColor) *Character 
 	c.RigidBody.Position = position
 	c.Id = id
 	c.Color = color
+	c.speed = DefaultVelMagnitude
 	return &c
 }
 
-const VelMagnitude float64 = 10
+const DefaultVelMagnitude float64 = 10
 
 func (this *Character) Update() {
+	v := this.MoveDirection.Mul(this.speed)
+	this.RigidBody.Velocity.AddSelf(v)
 	this.RigidBody.Update()
+	this.RigidBody.Velocity.SubSelf(v)
 }
 
 func spawnNewCharacter(id CharacterId) *Character {

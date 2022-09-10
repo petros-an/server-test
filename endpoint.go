@@ -30,9 +30,9 @@ func readStateInputsFromConnection(inputsChan chan StateInput, conn *websocket.C
 			log.Println(err)
 		} else {
 			inputsChan <- StateInput{
-				VelocityUpdate: &VelocityUpdate{
-					CharacterId: charId,
-					Velocity:    Vector2D{X: input.Velocity.VX, Y: input.Velocity.VY},
+				VelocityUpdate: &PlayerMoveDirectionUpdate{
+					CharacterId:   charId,
+					MoveDirection: Vector2D{X: input.Velocity.VX, Y: input.Velocity.VY},
 				},
 			}
 		}
@@ -48,7 +48,6 @@ func sendStateToConnection(stateReads chan GameState, conn *websocket.Conn) {
 			log.Println("write:", err)
 			break
 		}
-		// log.Println(string(message))
 	}
 }
 

@@ -19,12 +19,12 @@ func (s GameState) Repr() string {
 
 type StateInput struct {
 	NewCharacter   *Character
-	VelocityUpdate *VelocityUpdate
+	VelocityUpdate *PlayerMoveDirectionUpdate
 }
 
-type VelocityUpdate struct {
-	CharacterId CharacterId
-	Velocity    Vector2D
+type PlayerMoveDirectionUpdate struct {
+	CharacterId   CharacterId
+	MoveDirection Vector2D
 }
 
 const FPS = 50.0
@@ -71,10 +71,10 @@ func applyNewCharacterUpdate(oldState GameState, newCharacter Character) GameSta
 	return oldState
 }
 
-func applyVelocityUpdate(oldState GameState, velUpdate VelocityUpdate) GameState {
+func applyVelocityUpdate(oldState GameState, velUpdate PlayerMoveDirectionUpdate) GameState {
 	for _, char := range oldState.Characters {
 		if char.Id == velUpdate.CharacterId {
-			char.RigidBody.Velocity = velUpdate.Velocity
+			char.MoveDirection = velUpdate.MoveDirection
 			break
 		}
 	}
