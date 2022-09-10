@@ -8,9 +8,9 @@ import (
 type CharacterId string
 
 type RGBColor struct {
-	R int8
-	G int8
-	B int8
+	R uint8
+	G uint8
+	B uint8
 }
 
 type Character struct {
@@ -47,8 +47,8 @@ func spawnNewCharacter(id CharacterId) *Character {
 
 func RandomColor() RGBColor {
 	return RGBColor{
-		R: int8(rand.Intn(256)),
-		B: int8(rand.Intn(256)),
-		G: int8(rand.Intn(256)),
+		R: uint8(rand.Intn(155) + 100),
+		B: uint8(rand.Intn(155) + 100),
+		G: uint8(rand.Intn(155) + 100),
 	}
 }
