@@ -40,7 +40,7 @@ function worldToCanvas(worldPosition) {
 function drawCharacter(character) {
     character.m.fillStyle = `rgb(${character.color.R}, ${character.color.G}, ${character.color.B})`;
     let pos = worldToCanvas(character.position)
-    character.m.fillRect(pos.x, pos.y, 10, 10);
+    character.m.fillRect(pos.x - 10 / 2, pos.y - 10 / 2, 10, 10);
     m.font = '20px serif';
     character.m.fillText(character.id, pos.x - 15, pos.y);
 }
