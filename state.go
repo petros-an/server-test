@@ -12,7 +12,7 @@ type GameState struct {
 func (s GameState) Repr() string {
 	str := ""
 	for _, c := range s.Characters {
-		str += fmt.Sprintf("[x:%f, y:%f, vx: %f, vy: %f, id: %s],", c.RigidBody.Position.X, c.RigidBody.Position.Y, c.RigidBody.Velocity.X, c.RigidBody.Velocity.Y, c.Id)
+		str += fmt.Sprintf("[x:%f, y:%f, vx: %f, vy: %f, id: %s],", c.RigidBody.LocalPosition.X, c.RigidBody.LocalPosition.Y, c.RigidBody.Velocity.X, c.RigidBody.Velocity.Y, c.Id)
 	}
 	return str
 }
@@ -31,6 +31,11 @@ const FPS = 50.0
 const DT = 1 / FPS
 
 const sendTickerSeconds = 0.01
+
+const worldBorderX1 = -40
+const worldBorderX2 = 40
+const worldBorderY1 = -40
+const worldBorderY2 = 40
 
 func gameStateMaintainer(
 	output chan GameState,
@@ -101,7 +106,32 @@ func applyStateUpdate(oldState GameState, input StateInput) GameState {
 
 func applyGameLoopUpdate(state GameState) GameState {
 	for _, c := range state.Characters {
-		c.Update()
+		forEachCharacter(c)
 	}
 	return state
+}
+
+func forEachCharacter(c *Character) {
+	c.Update()
+	worldBorder(c)
+}
+
+func worldBorder(c *Character) {
+	pos := c.Position()
+	oldPos := pos
+	if pos.X < worldBorderX1 {
+		pos.X = worldBorderX1
+	}
+	if pos.X > worldBorderX2 {
+		pos.X = worldBorderX2
+	}
+	if pos.Y < worldBorderY1 {
+		pos.Y = worldBorderY1
+	}
+	if pos.Y > worldBorderY2 {
+		pos.Y = worldBorderY2
+	}
+	if !oldPos.Equals(pos) {
+		c.SetPosition(pos)
+	}
 }

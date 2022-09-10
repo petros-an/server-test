@@ -10,5 +10,5 @@ func (this *RigidBody2D) Update() {
 }
 
 func (this *RigidBody2D) updateVelocity() {
-	this.Position.AddSelf(this.Velocity.Mul(DT))
+	this.LocalPosition.AddSelf(this.Velocity.Mul(DT))
 }

@@ -181,3 +181,7 @@ func (this *Vector2D) Rotate90OtherSelf() *Vector2D {
 	this.X, this.Y = this.Y, -this.X
 	return this
 }
+
+func (this Vector2D) Equals(other Vector2D) bool {
+	return this.X == other.X && this.Y == other.Y
+}

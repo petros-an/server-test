@@ -23,7 +23,7 @@ type Character struct {
 
 func newCharacter(position Vector2D, id CharacterId, color RGBColor) *Character {
 	c := Character{}
-	c.RigidBody.Position = position
+	c.RigidBody.LocalPosition = position
 	c.Id = id
 	c.Color = color
 	c.speed = DefaultVelMagnitude
@@ -31,6 +31,14 @@ func newCharacter(position Vector2D, id CharacterId, color RGBColor) *Character 
 }
 
 const DefaultVelMagnitude float64 = 10
+
+func (this Character) Position() Vector2D {
+	return this.RigidBody.Position()
+}
+
+func (this *Character) SetPosition(position Vector2D) {
+	this.RigidBody.SetPosition(position)
+}
 
 func (this *Character) Update() {
 	v := this.MoveDirection.Mul(this.speed)
