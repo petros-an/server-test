@@ -13,7 +13,7 @@ export class State {
 
     updateState(parsed) {
         // console.log(event)
-        //console.log(parsed)
+        console.log(parsed)
         this.characters = []
         for (let i = 0; i < parsed['Characters'].length; i++) {
             let characterData = parsed['Characters'][i]
@@ -21,6 +21,7 @@ export class State {
                 characterData['RigidBody']['Position']['x'],
                 characterData['RigidBody']['Position']['y'],
                 characterData['Color'],
+                characterData['Id'],
                 this.m
             )
         }

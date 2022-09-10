@@ -5,58 +5,77 @@ import { render, m } from './render.mjs';
 
 
 
-// const url = "ws://still-citadel-50381.herokuapp.com/state"
-// const url = "ws://141.255.13.223:8080/state"
-const url = "ws://localhost:8080/state"
-const socket = new WebSocket(url);
-const api = new Api(socket)
-
-const currentState = new State(m, 'mainstate')
-
-socket.onmessage = (event) => {
-    let parsed = JSON.parse(event.data)
-    if (!isNaN(parsed)) {
-        ID = parsed
-        //console.log("ID: ", ID)
+function handleStartButton(e) {
+    
+    const username = document.getElementById("username").value
+    if (username) {
+        document.getElementById("start-btn").onclick = () => {}
+        document.getElementById("start-btn").hidden = true
+        document.getElementById("username").hidden = true
+        startGame(username)
     }
-    else {
-        currentState.updateState(parsed)
-    }
+    
 }
+document.getElementById("start-btn").onclick = handleStartButton;
 
-const ID = (Math.random() + 1).toString(16).substring(2);
-console.log(ID)
+function startGame(ID) {
 
-const sendTicker = 0.03
-socket.onopen = (x) => {
-    socket.send(ID)
-    sendRepeat()
-}
 
-function sleep(time) {
-    return new Promise((resolve) => setTimeout(resolve, time));
-}
+    // const url = "ws://still-citadel-50381.herokuapp.com/state"
+    // const url = "ws://141.255.13.223:8080/state"
+    const url = "ws://localhost:8080/state"
+    const socket = new WebSocket(url);
+    const api = new Api(socket)
 
-const sendRepeat = () => {
-    while (true) {
-        if (api.message != undefined) {
-            socket.send(api.message)
-            sleep(sendTicker * 1000).then(sendRepeat)
-            return;
+    const currentState = new State(m, 'mainstate')
+
+    socket.onmessage = (event) => {
+        let parsed = JSON.parse(event.data)
+        if (!isNaN(parsed)) {
+            ID = parsed
+            //console.log("ID: ", ID)
+        }
+        else {
+            currentState.updateState(parsed)
         }
     }
+    
+    // const ID = (Math.random() + 1).toString(16).substring(2);
+    console.log(ID)
+    
+    const sendTicker = 0.03
+    socket.onopen = (x) => {
+        socket.send(ID)
+        sendRepeat()
+    }
+    
+    function sleep(time) {
+        return new Promise((resolve) => setTimeout(resolve, time));
+    }
+    
+    const sendRepeat = () => {
+        while (true) {
+            if (api.message != undefined) {
+                socket.send(api.message)
+                sleep(sendTicker * 1000).then(sendRepeat)
+                return;
+            }
+        }
+    }
+    
+    const pressedKeys = {};
+    window.onkeyup = function (e) { pressedKeys[e.key] = false; }
+    window.onkeydown = function (e) { pressedKeys[e.key] = true; }
+    const playerController = new PlayerController(pressedKeys, api)
+    
+    const update = () => {
+        playerController.checkPlayerIntput()
+        render(currentState)
+        requestAnimationFrame(update);
+    };
+    
+    
+    update();
+
 }
 
-const pressedKeys = {};
-window.onkeyup = function (e) { pressedKeys[e.key] = false; }
-window.onkeydown = function (e) { pressedKeys[e.key] = true; }
-const playerController = new PlayerController(pressedKeys, api)
-
-const update = () => {
-    playerController.checkPlayerIntput()
-    render(currentState)
-    requestAnimationFrame(update);
-};
-
-
-update();

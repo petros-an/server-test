@@ -3,6 +3,7 @@ import { Vector2D } from "./Libs/Math/vector.mjs";
 
 export const m = document.getElementById("life").getContext("2d");
 
+
 const width = 800
 const height = 800
 const widthToHeightRatio = width / height
@@ -40,4 +41,6 @@ function drawCharacter(character) {
     character.m.fillStyle = `rgb(${character.color.R}, ${character.color.G}, ${character.color.B})`;
     let pos = worldToCanvas(character.position)
     character.m.fillRect(pos.x, pos.y, 10, 10);
+    m.font = '20px serif';
+    character.m.fillText(character.id, pos.x - 15, pos.y);
 }

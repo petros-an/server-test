@@ -48,6 +48,7 @@ func sendStateToConnection(stateReads chan GameState, conn *websocket.Conn) {
 			log.Println("write:", err)
 			break
 		}
+		// log.Println(string(message))
 	}
 }
 
