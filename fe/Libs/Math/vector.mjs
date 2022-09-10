@@ -7,7 +7,7 @@ export var Vector2D = function (arg1, arg2) {
         this.x = arg1
         this.y = arg2
     }
-};
+}
 
 Object.defineProperties(Vector2D.prototype, {
     magnitude: {
@@ -35,11 +35,16 @@ Object.defineProperties(Vector2D.prototype, {
             return new Vector2D(this) / this.magnitude
         }
     },
-});
+    conj: {
+        get: function () {
+            return new Vector2D(this.x, -this.y)
+        }
+    },
+})
 
 Vector2D.prototype.toString = function () {
     return "(" + this.x + ", " + this.y + ")"
-};
+}
 
 Vector2D.prototype.equals = function (arg1, arg2) {
     if (arg2 == undefined) {
@@ -56,7 +61,12 @@ Vector2D.prototype.normalize = function () {
     this.x /= len
     this.y /= len
     return this
-};
+}
+
+Vector2D.prototype.conjSelf = function () {
+    this.y = -this.y
+    return this
+}
 
 Vector2D.prototype.add = function (arg1, arg2) {
     return new Vector2D(this).addSelf(arg1, arg2)

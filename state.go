@@ -12,7 +12,7 @@ type GameState struct {
 func (s GameState) Repr() string {
 	str := ""
 	for _, c := range s.Characters {
-		str += fmt.Sprintf("[x:%f, y:%f, vx: %f, vy: %f, id: %s],", c.Position.X, c.Position.Y, c.Velocity.X, c.Velocity.Y, c.Id)
+		str += fmt.Sprintf("[x:%f, y:%f, vx: %f, vy: %f, id: %s],", c.RigidBody.Position.X, c.RigidBody.Position.Y, c.RigidBody.Velocity.X, c.RigidBody.Velocity.Y, c.Id)
 	}
 	return str
 }
@@ -74,7 +74,7 @@ func applyNewCharacterUpdate(oldState GameState, newCharacter Character) GameSta
 func applyVelocityUpdate(oldState GameState, velUpdate VelocityUpdate) GameState {
 	for _, char := range oldState.Characters {
 		if char.Id == velUpdate.CharacterId {
-			char.Velocity = velUpdate.Velocity
+			char.RigidBody.Velocity = velUpdate.Velocity
 			break
 		}
 	}
@@ -101,7 +101,7 @@ func applyStateUpdate(oldState GameState, input StateInput) GameState {
 
 func applyGameLoopUpdate(state GameState) GameState {
 	for _, c := range state.Characters {
-		c.move()
+		c.Update()
 	}
 	return state
 }

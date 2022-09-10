@@ -14,29 +14,29 @@ type RGBColor struct {
 }
 
 type Character struct {
-	Position Vector2D
-	Velocity Vector2D
-	Id       CharacterId
-	Color    RGBColor
+	RigidBody RigidBody2D
+	Id        CharacterId
+	Color     RGBColor
+}
+
+func newCharacter(position Vector2D, id CharacterId, color RGBColor) *Character {
+	c := Character{}
+	c.RigidBody.Position = position
+	c.Id = id
+	c.Color = color
+	return &c
 }
 
 const VelMagnitude float64 = 10
 
-func (c *Character) move() {
-	c.Position.AddSelf(c.Velocity.Mul(DT * VelMagnitude))
+func (this *Character) Update() {
+	this.RigidBody.Update()
 }
 
 func spawnNewCharacter(id CharacterId) *Character {
 	rand.Seed(time.Now().UTC().UnixNano())
-	character := Character{
-		Position: Vector2D{
-			X: rand.Float64()*80 - 40,
-			Y: rand.Float64()*80 - 40,
-		},
-		Id:    id,
-		Color: RandomColor(),
-	}
-	return &character
+	character := newCharacter(Vector2D{X: rand.Float64()*80 - 40, Y: rand.Float64()*80 - 40}, id, RandomColor())
+	return character
 }
 
 func RandomColor() RGBColor {

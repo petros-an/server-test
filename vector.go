@@ -39,6 +39,15 @@ func (this Vector2D) AngleD() float64 {
 	return math.Atan2(this.Y, this.X) * 180 / math.Pi
 }
 
+func (this Vector2D) Normalized() Vector2D {
+	m := this.MagnitudeSq()
+	if m == 1 {
+		return this
+	}
+	m = math.Sqrt(m)
+	return Vector2D{X: this.X / m, Y: this.Y / m}
+}
+
 func (this *Vector2D) Normalize() *Vector2D {
 	m := this.MagnitudeSq()
 	if m == 1 {
@@ -50,13 +59,13 @@ func (this *Vector2D) Normalize() *Vector2D {
 	return this
 }
 
-func (this Vector2D) Normalized() Vector2D {
-	m := this.MagnitudeSq()
-	if m == 1 {
-		return this
-	}
-	m = math.Sqrt(m)
-	return Vector2D{X: this.X / m, Y: this.Y / m}
+func (this Vector2D) Conj() Vector2D {
+	return Vector2D{X: this.X, Y: -this.Y}
+}
+
+func (this *Vector2D) ConjSelf() *Vector2D {
+	this.Y = -this.Y
+	return this
 }
 
 func (this Vector2D) Add(other Vector2D) Vector2D {
