@@ -2,8 +2,11 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"time"
 )
+
+const EVICTION_INTERVAL = 5 * time.Second
 
 type GameState struct {
 	Characters []*Character
@@ -12,20 +15,23 @@ type GameState struct {
 func (s GameState) Repr() string {
 	str := ""
 	for _, c := range s.Characters {
-		str += fmt.Sprintf("[x:%f, y:%f, vx: %f, vy: %f, id: %s],", c.RigidBody.LocalPosition.X, c.RigidBody.LocalPosition.Y, c.RigidBody.Velocity.X, c.RigidBody.Velocity.Y, c.Id)
+		str += fmt.Sprintf("[x:%f, y:%f, vx: %f, vy: %f, id: %s, v: %s],", c.RigidBody.LocalPosition.X, c.RigidBody.LocalPosition.Y, c.RigidBody.Velocity.X, c.RigidBody.Velocity.Y, c.Id, c.LastVital.String())
 	}
 	return str
 }
 
 type StateInput struct {
-	NewCharacter   *Character
-	VelocityUpdate *PlayerMoveDirectionUpdate
+	NewCharacter          *Character
+	VelocityUpdate        *PlayerMoveDirectionUpdate
+	RemoveInactivePlayers *RemoveInactivePlayersInstruction
 }
 
 type PlayerMoveDirectionUpdate struct {
 	CharacterId   CharacterId
 	MoveDirection Vector2D
 }
+
+type RemoveInactivePlayersInstruction bool
 
 const FPS = 50.0
 const DT = 1 / FPS
@@ -48,12 +54,14 @@ func gameStateMaintainer(
 
 	outputTicker := time.NewTicker(time.Duration(int64(sendTickerSeconds*1000)) * time.Millisecond)
 	gameLoopTicker := time.NewTicker(time.Duration(int64(DT*1000)) * time.Millisecond)
+	go evictor(input)
 
 	for {
 		select {
 		case <-outputTicker.C:
-			//log.Println("[M] Sending new state")
+			log.Println("[M] Sending new state")
 			//log.Println(gameState.Characters)
+			log.Println(gameState.Repr())
 			output <- gameState
 		case stateInput := <-input:
 			// log.Printf("[M] Received state update ")
@@ -64,6 +72,19 @@ func gameStateMaintainer(
 			gameState = applyGameLoopUpdate(gameState)
 		}
 	}
+}
+
+func evictor(c chan StateInput) {
+	tck := time.NewTicker(time.Second)
+	for range tck.C {
+
+		var b RemoveInactivePlayersInstruction = RemoveInactivePlayersInstruction(true)
+		c <- StateInput{
+			RemoveInactivePlayers: &b,
+		}
+
+	}
+
 }
 
 func applyNewCharacterUpdate(oldState GameState, newCharacter Character) GameState {
@@ -92,21 +113,44 @@ func applyStateUpdate(oldState GameState, input StateInput) GameState {
 
 	state := oldState
 
+	if input.RemoveInactivePlayers != nil {
+		state = applyRemoveInactivePlayersUpdate(oldState)
+	}
+
 	if input.NewCharacter != nil {
 		state = applyNewCharacterUpdate(oldState, *input.NewCharacter)
 	}
 
 	if input.VelocityUpdate != nil {
 		state = applyVelocityUpdate(oldState, *input.VelocityUpdate)
+		state = applyVitalsUpdate(oldState, *&input.VelocityUpdate.CharacterId)
 	}
 
 	return state
 
 }
 
+func applyVitalsUpdate(state GameState, characterId CharacterId) GameState {
+	for _, c := range state.Characters {
+		if c.Id == characterId {
+			c.LastVital = time.Now()
+		}
+	}
+	return state
+}
+
 func applyGameLoopUpdate(state GameState) GameState {
 	for _, c := range state.Characters {
 		forEachCharacter(c)
+	}
+	return state
+}
+
+func applyRemoveInactivePlayersUpdate(state GameState) GameState {
+	for i, c := range state.Characters {
+		if time.Now().Sub(c.LastVital) > EVICTION_INTERVAL {
+			state.Characters = append(state.Characters[:i], state.Characters[i+1:]...)
+		}
 	}
 	return state
 }

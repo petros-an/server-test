@@ -19,6 +19,7 @@ type Character struct {
 	speed         float64
 	Id            CharacterId
 	Color         RGBColor
+	LastVital     time.Time
 }
 
 func newCharacter(position Vector2D, id CharacterId, color RGBColor) *Character {
@@ -27,6 +28,7 @@ func newCharacter(position Vector2D, id CharacterId, color RGBColor) *Character 
 	c.Id = id
 	c.Color = color
 	c.speed = DefaultVelMagnitude
+	c.LastVital = time.Now()
 	return &c
 }
 
