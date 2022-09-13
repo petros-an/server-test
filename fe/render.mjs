@@ -4,19 +4,24 @@ import { Vector2D } from "./Libs/Math/vector.mjs";
 export const m = document.getElementById("life").getContext("2d");
 
 
-const width = 800
-const height = 800
-const widthToHeightRatio = width / height
-const widthDiv2 = width / 2
-const heightDiv2 = height / 2
+const screenWidth = 800
+const screenHeight = 800
+const widthToHeightRatio = screenWidth / screenHeight
+const widthDiv2 = screenWidth / 2
+const heightDiv2 = screenHeight / 2
 
-const worldWidth = 80
-const worldHeight = worldWidth / widthToHeightRatio
-const pixelToWorldRatio = width / worldWidth
+const cameraWidth = 80
+const cameraHeight = 80
+const cameraHalfWidth = cameraWidth / 2
+const cameraHalfHeight = cameraHeight / 2
+const cameraInverseHalfWidth = 1 / cameraHalfWidth
+const cameraInverseHalfHeight = 1 / cameraHalfHeight
+
+const pixelToWorldRatio = screenWidth / cameraWidth
 const worldOriginOnCanvasRatio = new Vector2D(0.5, 0.5)
 
 export function render(currentState) {
-    m.clearRect(0, 0, width, height);
+    m.clearRect(0, 0, screenWidth, screenHeight);
     drawWorld(m)
 
     for (let i = 0; i < currentState.characters.length; i++) {
@@ -38,8 +43,8 @@ function draw(x, y, c, w, h) {
 
 
 function worldToCanvas(worldPosition) {
-    let pixelPos = worldPosition.add(worldOriginOnCanvasRatio.mul(width, height).div(pixelToWorldRatio)).mul(pixelToWorldRatio)
-    pixelPos.y = height - pixelPos.y
+    let pixelPos = worldPosition.add(worldOriginOnCanvasRatio.mul(screenWidth, screenHeight).div(pixelToWorldRatio)).mul(pixelToWorldRatio)
+    pixelPos.y = screenHeight - pixelPos.y
     return pixelPos
 }
 
