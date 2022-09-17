@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"log"
+	// "log"
 	"time"
 )
 
@@ -59,9 +59,9 @@ func gameStateMaintainer(
 	for {
 		select {
 		case <-outputTicker.C:
-			log.Println("[M] Sending new state")
+			// log.Println("[M] Sending new state")
 			//log.Println(gameState.Characters)
-			log.Println(gameState.Repr())
+			// log.Println(gameState.Repr())
 			output <- gameState
 		case stateInput := <-input:
 			// log.Printf("[M] Received state update ")

@@ -10,11 +10,9 @@ import (
 
 type Endpoint func(http.ResponseWriter, *http.Request)
 
-type ClientInput struct {
-	Velocity struct {
-		VX float64
-		VY float64
-	}
+type DirectionInput struct {
+	X float64
+	Y float64
 }
 
 func readStateInputsFromConnection(inputsChan chan StateInput, conn *websocket.Conn, charId CharacterId) {
@@ -24,18 +22,25 @@ func readStateInputsFromConnection(inputsChan chan StateInput, conn *websocket.C
 			log.Println("read:", err)
 			return
 		}
-		var input ClientInput
+		var input map[string]interface{}
 		err = parseJson(message, &input)
 		if err != nil {
 			log.Println(err)
 		} else {
-			inputsChan <- StateInput{
-				VelocityUpdate: &PlayerMoveDirectionUpdate{
-					CharacterId:   charId,
-					MoveDirection: Vector2D{X: input.Velocity.VX, Y: input.Velocity.VY},
-				},
+
+			if _, ok := input["ping"]; ok {
+				// sendPing(conn)
 			}
+			handleMessageRecieved(input, inputsChan, charId)
 		}
+	}
+}
+
+func sendPing(conn *websocket.Conn) {
+	message := serializeJson([]byte(`{"ping":{}}`))
+	err := conn.WriteMessage(websocket.TextMessage, message)
+	if err != nil {
+		log.Println("ping error:", err)
 	}
 }
 
@@ -112,4 +117,23 @@ func serializeJson(data interface{}) []byte {
 func parseJson(data []byte, dst interface{}) error {
 	err := json.Unmarshal(data, dst)
 	return err
+}
+
+func handleMessageRecieved(parsed map[string]interface{}, inputsChan chan StateInput, charId CharacterId) {
+	for k, v := range parsed {
+		switch k {
+		case "direction":
+			var directionInput DirectionInput
+			temp, _ := json.Marshal(v)
+			json.Unmarshal(temp, &directionInput)
+			inputsChan <- StateInput{
+				VelocityUpdate: &PlayerMoveDirectionUpdate{
+					CharacterId:   charId,
+					MoveDirection: Vector2D{X: directionInput.X, Y: directionInput.Y},
+				},
+			}
+			break
+		}
+	}
+
 }
