@@ -2,10 +2,9 @@ package main
 
 import (
 	"math/rand"
-	"time"
 )
 
-type CharacterId string
+type PlayerId string
 
 type RGBColor struct {
 	R uint8
@@ -15,20 +14,17 @@ type RGBColor struct {
 
 type Character struct {
 	RigidBody     RigidBody2D
+	Tag           string
 	MoveDirection Vector2D
 	speed         float64
-	Id            CharacterId
 	Color         RGBColor
-	LastVital     time.Time
 }
 
-func newCharacter(position Vector2D, id CharacterId, color RGBColor) *Character {
+func newCharacter(position Vector2D, color RGBColor) *Character {
 	c := Character{}
 	c.RigidBody.LocalPosition = position
-	c.Id = id
 	c.Color = color
 	c.speed = DefaultVelMagnitude
-	c.LastVital = time.Now()
 	return &c
 }
 
@@ -47,12 +43,6 @@ func (this *Character) Update() {
 	this.RigidBody.Velocity.AddSelf(v)
 	this.RigidBody.Update()
 	this.RigidBody.Velocity.SubSelf(v)
-}
-
-func spawnNewCharacter(id CharacterId) *Character {
-	rand.Seed(time.Now().UTC().UnixNano())
-	character := newCharacter(Vector2D{X: rand.Float64()*80 - 40, Y: rand.Float64()*80 - 40}, id, RandomColor())
-	return character
 }
 
 func RandomColor() RGBColor {

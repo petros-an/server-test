@@ -15,7 +15,7 @@ type DirectionInput struct {
 	Y float64
 }
 
-func readStateInputsFromConnection(inputsChan chan StateInput, conn *websocket.Conn, charId CharacterId) {
+func readStateInputsFromConnection(inputsChan chan InputMessage, conn *websocket.Conn, charId PlayerId) {
 	for {
 		_, message, err := conn.ReadMessage()
 		if err != nil {
@@ -27,10 +27,6 @@ func readStateInputsFromConnection(inputsChan chan StateInput, conn *websocket.C
 		if err != nil {
 			log.Println(err)
 		} else {
-
-			if _, ok := input["ping"]; ok {
-				// sendPing(conn)
-			}
 			handleMessageRecieved(input, inputsChan, charId)
 		}
 	}
@@ -44,27 +40,46 @@ func sendPing(conn *websocket.Conn) {
 	}
 }
 
-func sendStateToConnection(stateReads chan GameState, conn *websocket.Conn) {
+func sendStateToConnection(stateReads chan OutputMessage, conn *websocket.Conn) {
+
+	// loops every time stateReads is set
 	for newState := range stateReads {
-		//log.Println("[E] Sending state to client")
-		message := serializeJson(&newState)
-		err := conn.WriteMessage(websocket.TextMessage, message)
-		if err != nil {
-			log.Println("write:", err)
+		switch newState.Type {
+		case O_PING:
+
+			message := serializeJson(map[string]int{"ping": 0})
+			err := conn.WriteMessage(websocket.TextMessage, message)
+			if err != nil {
+				log.Println("error during ping sending:", err)
+				return
+			}
+			break
+		case O_STATE:
+			//log.Println("[E] Sending state to client")
+			message := serializeJson(&(newState.CurrentState))
+			err := conn.WriteMessage(websocket.TextMessage, message)
+			if err != nil {
+				log.Println("write:", err)
+				return
+			}
+			// log.Println(string(message))
+
+			break
+		default:
 			break
 		}
-		// log.Println(string(message))
+
 	}
 }
 
-func readIDFromConnection(conn *websocket.Conn) CharacterId {
+func readIDFromConnection(conn *websocket.Conn) PlayerId {
 
 	_, message, err := conn.ReadMessage()
 	if err != nil {
 		log.Println("read:", err)
 		return ""
 	}
-	var id CharacterId = CharacterId(message)
+	var id PlayerId = PlayerId(message)
 
 	log.Println("[E] Adding new character")
 	log.Println(id)
@@ -81,8 +96,8 @@ var upgrader = websocket.Upgrader{
 }
 
 func getEndpoint(
-	stateReads chan GameState,
-	stateInputs chan StateInput,
+	stateReads chan OutputMessage,
+	stateInputs chan InputMessage,
 ) Endpoint {
 	endpoint := func(w http.ResponseWriter, r *http.Request) {
 
@@ -93,14 +108,19 @@ func getEndpoint(
 		}
 		defer c.Close()
 
-		characterId := readIDFromConnection(c)
-		input := StateInput{
-			NewCharacter: spawnNewCharacter(characterId),
+		newPlayerId := readIDFromConnection(c)
+
+		Input := InputMessage{
+			Type:      I_NEW,
+			PlayerId:  newPlayerId,
+			NewPlayer: spawnNewPlayer(),
 		}
 
-		stateInputs <- input
+		Input.NewPlayer.Character.Tag = string(newPlayerId)
 
-		go readStateInputsFromConnection(stateInputs, c, characterId)
+		stateInputs <- Input
+
+		go readStateInputsFromConnection(stateInputs, c, newPlayerId)
 
 		sendStateToConnection(stateReads, c)
 
@@ -119,18 +139,20 @@ func parseJson(data []byte, dst interface{}) error {
 	return err
 }
 
-func handleMessageRecieved(parsed map[string]interface{}, inputsChan chan StateInput, charId CharacterId) {
+func handleMessageRecieved(parsed map[string]interface{}, inputsChan chan InputMessage, charId PlayerId) {
 	for k, v := range parsed {
 		switch k {
+		case "ping":
+			inputsChan <- InputMessage{Type: I_PING}
+			break
 		case "direction":
 			var directionInput DirectionInput
 			temp, _ := json.Marshal(v)
 			json.Unmarshal(temp, &directionInput)
-			inputsChan <- StateInput{
-				VelocityUpdate: &PlayerMoveDirectionUpdate{
-					CharacterId:   charId,
-					MoveDirection: Vector2D{X: directionInput.X, Y: directionInput.Y},
-				},
+			inputsChan <- InputMessage{
+				Type:      I_DIRECTION,
+				PlayerId:  charId,
+				Direction: newVector2D(directionInput.X, directionInput.Y),
 			}
 			break
 		}

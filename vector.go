@@ -9,6 +9,10 @@ type Vector2D struct {
 	Y float64 `json:"y"`
 }
 
+func newVector2D(x float64, y float64) Vector2D {
+	return Vector2D{X: x, Y: y}
+}
+
 func newVector2DAngleR(angle float64) Vector2D {
 	return Vector2D{X: math.Cos(angle), Y: math.Sin(angle)}
 }

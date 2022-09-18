@@ -10,8 +10,8 @@ var addr = ":" + getEnv("PORT", "8080")
 
 func main() {
 
-	stateReadChan := make(chan GameState, 100)
-	stateUpdateChan := make(chan StateInput, 100)
+	stateReadChan := make(chan OutputMessage, 100)
+	stateUpdateChan := make(chan InputMessage, 100)
 
 	go gameStateMaintainer(stateReadChan, stateUpdateChan, nil)
 
