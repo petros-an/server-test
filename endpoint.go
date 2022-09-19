@@ -15,19 +15,19 @@ type DirectionInput struct {
 	Y float64
 }
 
-func readStateInputsFromConnection(inputsChan chan InputMessage, conn *websocket.Conn, charId PlayerId) {
+func readStateInputsFromConnection(inputChannel chan InputMessage, conn *websocket.Conn, charId PlayerId) {
 	for {
 		_, message, err := conn.ReadMessage()
 		if err != nil {
 			log.Println("read:", err)
 			return
 		}
-		var input map[string]interface{}
-		err = parseJson(message, &input)
+		var parsedMessage map[string]interface{}
+		err = parseJson(message, &parsedMessage)
 		if err != nil {
 			log.Println(err)
 		} else {
-			handleMessageRecieved(input, inputsChan, charId)
+			handleMessageRecieved(parsedMessage, inputChannel, charId)
 		}
 	}
 }
@@ -96,8 +96,8 @@ var upgrader = websocket.Upgrader{
 }
 
 func getEndpoint(
-	stateReads chan OutputMessage,
-	stateInputs chan InputMessage,
+	outputChannel chan OutputMessage,
+	inputChannel chan InputMessage,
 ) Endpoint {
 	endpoint := func(w http.ResponseWriter, r *http.Request) {
 
@@ -118,11 +118,11 @@ func getEndpoint(
 
 		Input.NewPlayer.Character.Tag = string(newPlayerId)
 
-		stateInputs <- Input
+		inputChannel <- Input
 
-		go readStateInputsFromConnection(stateInputs, c, newPlayerId)
+		go readStateInputsFromConnection(inputChannel, c, newPlayerId)
 
-		sendStateToConnection(stateReads, c)
+		sendStateToConnection(outputChannel, c)
 
 	}
 
@@ -139,17 +139,17 @@ func parseJson(data []byte, dst interface{}) error {
 	return err
 }
 
-func handleMessageRecieved(parsed map[string]interface{}, inputsChan chan InputMessage, charId PlayerId) {
-	for k, v := range parsed {
+func handleMessageRecieved(parsedMessage map[string]interface{}, inputChannel chan InputMessage, charId PlayerId) {
+	for k, v := range parsedMessage {
 		switch k {
 		case "ping":
-			inputsChan <- InputMessage{Type: I_PING}
+			inputChannel <- InputMessage{Type: I_PING}
 			break
 		case "direction":
 			var directionInput DirectionInput
 			temp, _ := json.Marshal(v)
 			json.Unmarshal(temp, &directionInput)
-			inputsChan <- InputMessage{
+			inputChannel <- InputMessage{
 				Type:      I_DIRECTION,
 				PlayerId:  charId,
 				Direction: newVector2D(directionInput.X, directionInput.Y),

@@ -50,7 +50,7 @@ type OutputMessage struct {
 const FPS = 50.0
 const DT = 1 / FPS
 
-const sendTickerSeconds = 1.01
+const sendTickerSeconds = 0.01
 
 const worldBorderX1 = -40
 const worldBorderX2 = 40
@@ -58,8 +58,8 @@ const worldBorderY1 = -40
 const worldBorderY2 = 40
 
 func gameStateMaintainer(
-	output chan OutputMessage,
-	input chan InputMessage,
+	outputChannel chan OutputMessage,
+	inputChannel chan InputMessage,
 	stopper chan bool,
 ) {
 	gameState := GameState{
@@ -69,17 +69,17 @@ func gameStateMaintainer(
 
 	outputTicker := time.NewTicker(time.Duration(int64(sendTickerSeconds*1000)) * time.Millisecond)
 	gameLoopTicker := time.NewTicker(time.Duration(int64(DT*1000)) * time.Millisecond)
-	go evictor(input)
+	go evictor(inputChannel)
 
 	for {
 		select {
 		case <-outputTicker.C:
-			output <- OutputMessage{Type: O_STATE, CurrentState: gameState}
+			outputChannel <- OutputMessage{Type: O_STATE, CurrentState: gameState}
 
-		case stateInput := <-input:
+		case stateInput := <-inputChannel:
 
 			if stateInput.Type == I_PING {
-				output <- OutputMessage{Type: O_PING}
+				outputChannel <- OutputMessage{Type: O_PING}
 				continue
 			}
 			applyStateUpdate(&gameState, stateInput)

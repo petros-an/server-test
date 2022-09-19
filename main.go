@@ -10,14 +10,14 @@ var addr = ":" + getEnv("PORT", "8080")
 
 func main() {
 
-	stateReadChan := make(chan OutputMessage, 100)
-	stateUpdateChan := make(chan InputMessage, 100)
+	outputChannel := make(chan OutputMessage, 100)
+	inputChannel := make(chan InputMessage, 100)
 
-	go gameStateMaintainer(stateReadChan, stateUpdateChan, nil)
+	go gameStateMaintainer(outputChannel, inputChannel, nil)
 
 	http.HandleFunc(
 		"/state",
-		getEndpoint(stateReadChan, stateUpdateChan),
+		getEndpoint(outputChannel, inputChannel),
 	)
 	log.Println("Starting server on " + addr)
 	log.Fatal(http.ListenAndServe(addr, nil))
