@@ -32,28 +32,11 @@ func readStateInputsFromConnection(inputChannel chan InputMessage, conn *websock
 	}
 }
 
-func sendPing(conn *websocket.Conn) {
-	message := serializeJson([]byte(`{"ping":{}}`))
-	err := conn.WriteMessage(websocket.TextMessage, message)
-	if err != nil {
-		log.Println("ping error:", err)
-	}
-}
-
 func sendStateToConnection(stateReads chan OutputMessage, conn *websocket.Conn) {
 
 	// loops every time stateReads is set
 	for newState := range stateReads {
 		switch newState.Type {
-		case O_PING:
-
-			message := serializeJson(map[string]int{"ping": 0})
-			err := conn.WriteMessage(websocket.TextMessage, message)
-			if err != nil {
-				log.Println("error during ping sending:", err)
-				return
-			}
-			break
 		case O_STATE:
 			//log.Println("[E] Sending state to client")
 			message := serializeJson(&(newState.CurrentState))
@@ -64,9 +47,7 @@ func sendStateToConnection(stateReads chan OutputMessage, conn *websocket.Conn) 
 			}
 			// log.Println(string(message))
 
-			break
 		default:
-			break
 		}
 
 	}
@@ -142,9 +123,6 @@ func parseJson(data []byte, dst interface{}) error {
 func handleMessageRecieved(parsedMessage map[string]interface{}, inputChannel chan InputMessage, charId PlayerId) {
 	for k, v := range parsedMessage {
 		switch k {
-		case "ping":
-			inputChannel <- InputMessage{Type: I_PING}
-			break
 		case "direction":
 			var directionInput DirectionInput
 			temp, _ := json.Marshal(v)
@@ -154,7 +132,30 @@ func handleMessageRecieved(parsedMessage map[string]interface{}, inputChannel ch
 				PlayerId:  charId,
 				Direction: newVector2D(directionInput.X, directionInput.Y),
 			}
-			break
+		}
+	}
+
+}
+
+func ping(w http.ResponseWriter, r *http.Request) {
+	conn, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Print("(ping)upgrade:", err)
+		return
+	}
+	defer conn.Close()
+
+	for {
+		_, _, err := conn.ReadMessage()
+		if err != nil {
+			log.Println("read:", err)
+			return
+		}
+		message := serializeJson(map[string]interface{}{})
+		err = conn.WriteMessage(websocket.TextMessage, message)
+		if err != nil {
+			log.Println("error during ping sending:", err)
+			return
 		}
 	}
 

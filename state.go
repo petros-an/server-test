@@ -31,13 +31,11 @@ type InputMessage struct {
 type MessageType byte
 
 const (
-	O_PING MessageType = iota
-	O_STATE
+	O_STATE MessageType = iota
 )
 
 const (
 	I_NEW MessageType = iota
-	I_PING
 	I_DISCONNECT
 	I_DIRECTION
 )
@@ -69,7 +67,7 @@ func gameStateMaintainer(
 
 	outputTicker := time.NewTicker(time.Duration(int64(sendTickerSeconds*1000)) * time.Millisecond)
 	gameLoopTicker := time.NewTicker(time.Duration(int64(DT*1000)) * time.Millisecond)
-	go evictor(inputChannel)
+	// go evictor(inputChannel)
 
 	for {
 		select {
@@ -77,11 +75,6 @@ func gameStateMaintainer(
 			outputChannel <- OutputMessage{Type: O_STATE, CurrentState: gameState}
 
 		case stateInput := <-inputChannel:
-
-			if stateInput.Type == I_PING {
-				outputChannel <- OutputMessage{Type: O_PING}
-				continue
-			}
 			applyStateUpdate(&gameState, stateInput)
 			applyVitalsUpdate(&gameState, stateInput.PlayerId)
 
@@ -104,13 +97,10 @@ func applyStateUpdate(currentState *GameState, input InputMessage) {
 	switch input.Type {
 	case I_DISCONNECT:
 		applyRemoveInactivePlayersUpdate(currentState)
-		break
 	case I_DIRECTION:
 		applyVelocityUpdate(currentState, input.Direction, input.PlayerId)
-		break
 	case I_NEW:
 		applyNewPlayerUpdate(currentState, input.NewPlayer, input.PlayerId)
-		break
 	}
 }
 

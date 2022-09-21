@@ -19,6 +19,11 @@ func main() {
 		"/state",
 		getEndpoint(outputChannel, inputChannel),
 	)
+
+	http.HandleFunc(
+		"/ping",
+		ping,
+	)
 	log.Println("Starting server on " + addr)
 	log.Fatal(http.ListenAndServe(addr, nil))
 }
