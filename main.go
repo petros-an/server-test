@@ -1,37 +1,15 @@
 package main
 
 import (
-	"log"
-	"net/http"
-	"os"
+	"github.com/petros-an/server-test/api"
+	"github.com/petros-an/server-test/game"
 )
-
-var addr = ":" + getEnv("PORT", "8080")
 
 func main() {
 
-	outputChannel := make(chan OutputMessage, 100)
-	inputChannel := make(chan InputMessage, 100)
+	g := game.New()
 
-	go gameStateMaintainer(outputChannel, inputChannel, nil)
+	go g.Run()
+	api.Run(g)
 
-	http.HandleFunc(
-		"/state",
-		getEndpoint(outputChannel, inputChannel),
-	)
-
-	http.HandleFunc(
-		"/ping",
-		ping,
-	)
-	log.Println("Starting server on " + addr)
-	log.Fatal(http.ListenAndServe(addr, nil))
-}
-
-func getEnv(name string, fallback string) string {
-	val := os.Getenv(name)
-	if val == "" {
-		return fallback
-	}
-	return val
 }

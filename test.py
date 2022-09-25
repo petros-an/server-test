@@ -4,8 +4,8 @@ import json
 import time
 
 def listen():
-    url = 'ws://still-citadel-50381.herokuapp.com/state'
-    # url = 'ws://localhost:8080/state'
+#    url = 'ws://still-citadel-50381.herokuapp.com/state'
+    url = 'ws://localhost:8080/state'
     print('connecting...')
     ws = websocket.create_connection(url)
 

@@ -1,4 +1,4 @@
-package main
+package vector
 
 import (
 	"math"
@@ -9,22 +9,22 @@ type Vector2D struct {
 	Y float64 `json:"y"`
 }
 
-func newVector2D(x float64, y float64) Vector2D {
+func New(x float64, y float64) Vector2D {
 	return Vector2D{X: x, Y: y}
 }
 
-func newVector2DAngleR(angle float64) Vector2D {
+func NewVector2DAngleR(angle float64) Vector2D {
 	return Vector2D{X: math.Cos(angle), Y: math.Sin(angle)}
 }
-func newVector2DMagnAngleR(magnitude float64, angle float64) Vector2D {
+func NewVector2DMagnAngleR(magnitude float64, angle float64) Vector2D {
 	return Vector2D{X: magnitude * math.Cos(angle), Y: magnitude * math.Sin(angle)}
 }
 
-func newVector2DAngleD(angle float64) Vector2D {
-	return newVector2DAngleR(angle * math.Pi / 180)
+func NewVector2DAngleD(angle float64) Vector2D {
+	return NewVector2DAngleR(angle * math.Pi / 180)
 }
-func newVector2DMagnAngleD(magnitude float64, angle float64) Vector2D {
-	return newVector2DMagnAngleR(magnitude, angle*math.Pi/180)
+func NewVector2DMagnAngleD(magnitude float64, angle float64) Vector2D {
+	return NewVector2DMagnAngleR(magnitude, angle*math.Pi/180)
 }
 
 func (this Vector2D) Magnitude() float64 {
