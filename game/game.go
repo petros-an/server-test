@@ -55,7 +55,7 @@ func (g *Game) Run() {
 
 	outputTicker := time.NewTicker(time.Duration(int64(config.SendTickerSeconds*1000)) * time.Millisecond)
 	gameLoopTicker := time.NewTicker(time.Duration(int64(config.DT*1000)) * time.Millisecond)
-	evictorTicker := time.NewTicker(time.Second)
+	// evictorTicker := time.NewTicker(time.Second)
 
 	go func() {
 		for {
@@ -69,8 +69,8 @@ func (g *Game) Run() {
 			g.Output <- g.State
 		case input := <-g.Input:
 			input.UpdateState(&g.State)
-		case <-evictorTicker.C:
-			removeInactivePlayers(&g.State)
+		// case <-evictorTicker.C:
+		// 	removeInactivePlayers(&g.State)
 		case <-gameLoopTicker.C:
 			applyGameLoopUpdate(&g.State)
 		}
@@ -97,7 +97,7 @@ func (g *Game) FireProjectile(playerId player.PlayerId, direction vector.Vector2
 	if !exists {
 		return
 	}
-
+	log.Println(fmt.Sprintf("projectile fired by %s with direction: %f, %f", player.PlayerId, direction.X, direction.Y))
 	g.Input <- ProjectileFiredUpdate{
 		Position:  player.Character.Position(),
 		Direction: direction,

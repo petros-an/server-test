@@ -19,8 +19,10 @@ func (p Player) RefreshVitals() {
 }
 
 func New(id PlayerId) *Player {
+	newCharacter := character.RandomNew()
+	newCharacter.Tag = string(id)
 	return &Player{
-		Character: character.RandomNew(),
+		Character: newCharacter,
 		LastVital: time.Now(),
 		PlayerId:  id,
 	}

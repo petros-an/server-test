@@ -101,7 +101,7 @@ func PropagatePlayerInput(input PlayerInputSchema, g *game.Game, playerId player
 		g.FireProjectile(
 			playerId,
 			vector.New(
-				input.Direction.X, input.Direction.Y,
+				input.ProjectileFired.Direction.X, input.ProjectileFired.Direction.Y,
 			),
 		)
 	}
