@@ -1,10 +1,15 @@
 package state
 
-type DirectionInput struct {
+type DirectionSchema struct {
 	X float64
 	Y float64
 }
 
-type PlayerInput struct {
-	Direction *DirectionInput
+type PlayerInputSchema struct {
+	Direction       *DirectionSchema
+	ProjectileFired *ProjectileFiredSchema
+}
+
+type ProjectileFiredSchema struct {
+	Direction *DirectionSchema
 }

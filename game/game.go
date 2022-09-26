@@ -10,12 +10,14 @@ import (
 	"github.com/petros-an/server-test/game/character"
 	"github.com/petros-an/server-test/game/config"
 	"github.com/petros-an/server-test/game/player"
+	"github.com/petros-an/server-test/game/projectile"
 	"github.com/petros-an/server-test/game/world"
 )
 
 type GameState struct {
-	Characters []*character.Character
-	Players    map[player.PlayerId]*player.Player
+	Characters  []*character.Character
+	Players     map[player.PlayerId]*player.Player
+	Projectiles []*projectile.Projectile
 }
 
 type Game struct {
@@ -89,8 +91,27 @@ func (g *Game) UpdateCharacterDirection(playerId player.PlayerId, direction vect
 	}
 }
 
+func (g *Game) FireProjectile(playerId player.PlayerId, direction vector.Vector2D) {
+
+	player, exists := g.GetPlayer(playerId)
+	if !exists {
+		return
+	}
+
+	g.Input <- ProjectileFiredUpdate{
+		Position:  player.Character.Position(),
+		Direction: direction,
+		FiredBy:   player,
+	}
+}
+
 func (g *Game) ReadState() chan GameState {
 	return g.Output
+}
+
+func (g *Game) GetPlayer(playerId player.PlayerId) (*player.Player, bool) {
+	player, exists := g.State.Players[playerId]
+	return player, exists
 }
 
 func applyVitalsUpdate(state *GameState, id player.PlayerId) {
@@ -106,6 +127,14 @@ func applyGameLoopUpdate(state *GameState) {
 			world.RestrictPositionWithinBorder(c.Position()),
 		)
 	}
+
+	for _, p := range state.Projectiles {
+		p.Update(config.DT)
+	}
+
+	/*
+		TODO: collision check
+	*/
 }
 
 func removeInactivePlayers(state *GameState) {

@@ -76,7 +76,7 @@ func readInputsFromConnection(g *game.Game, conn *websocket.Conn, charId player.
 			log.Println("read:", err)
 			return
 		} else {
-			var parsedInput PlayerInput
+			var parsedInput PlayerInputSchema
 			err = utils.ParseJson(data, &parsedInput)
 			if err != nil {
 				log.Println(err)
@@ -87,9 +87,18 @@ func readInputsFromConnection(g *game.Game, conn *websocket.Conn, charId player.
 	}
 }
 
-func PropagatePlayerInput(input PlayerInput, g *game.Game, playerId player.PlayerId) {
+func PropagatePlayerInput(input PlayerInputSchema, g *game.Game, playerId player.PlayerId) {
 	if input.Direction != nil {
 		g.UpdateCharacterDirection(
+			playerId,
+			vector.New(
+				input.Direction.X, input.Direction.Y,
+			),
+		)
+	}
+
+	if input.ProjectileFired != nil {
+		g.FireProjectile(
 			playerId,
 			vector.New(
 				input.Direction.X, input.Direction.Y,
