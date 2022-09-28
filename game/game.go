@@ -130,11 +130,24 @@ func applyGameLoopUpdate(state *GameState) {
 
 	for _, p := range state.Projectiles {
 		p.Update(config.DT)
+		if world.IsOutsideWorld(p.RigidBody.LocalPosition) {
+			utils.RemoveElementFromSlice(&state.Projectiles, p)
+		}
 	}
 
-	/*
-		TODO: collision check
-	*/
+	for _, p := range state.Projectiles {
+		for _, c := range state.Characters {
+			if c.Position().Sub(p.RigidBody.LocalPosition).MagnitudeSq() < utils.Pow2(c.RigidBody.LocalScale.X/2+p.RigidBody.LocalScale.Y/2) {
+				if p.FiredBy != c {
+					utils.RemoveElementFromSlice(&state.Projectiles, p)
+					log.Printf("Projectile %d hit character %s", p.Id, c.Tag)
+					break
+				}
+
+			}
+		}
+	}
+
 }
 
 func removeInactivePlayers(state *GameState) {

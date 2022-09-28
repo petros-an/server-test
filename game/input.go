@@ -63,5 +63,5 @@ func (u ProjectileFiredUpdate) GetPlayerId() player.PlayerId {
 }
 
 func (u ProjectileFiredUpdate) UpdateState(state *GameState) {
-	state.Projectiles = append(state.Projectiles, projectile.New(u.Position, u.Direction))
+	state.Projectiles = append(state.Projectiles, projectile.New(u.FiredBy.Character, u.Position, u.Direction))
 }

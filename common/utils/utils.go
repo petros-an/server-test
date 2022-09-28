@@ -44,3 +44,7 @@ func Max(a float64, b float64) float64 {
 	}
 	return b
 }
+
+func Pow2(x float64) float64 {
+	return x * x
+}

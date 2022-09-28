@@ -1,6 +1,8 @@
 package projectile
 
 import (
+	"math/rand"
+
 	"github.com/petros-an/server-test/common/color"
 	"github.com/petros-an/server-test/common/rigidbody"
 	"github.com/petros-an/server-test/common/vector"
@@ -10,29 +12,28 @@ import (
 const DefaultProjectileSpeed = 20
 
 type Projectile struct {
-	RigidBody     rigidbody.RigidBody2D
-	MoveDirection vector.Vector2D
-	Speed         float64
-	Color         color.RGBColor
-	FiredBy       *character.Character
+	RigidBody rigidbody.RigidBody2D
+	Color     color.RGBColor
+	FiredBy   *character.Character
+	Id        int
 }
 
 func New(
+	firedBy *character.Character,
 	position vector.Vector2D,
 	direction vector.Vector2D,
 ) *Projectile {
 	p := Projectile{
-		Color:         color.Random(),
-		Speed:         DefaultProjectileSpeed,
-		MoveDirection: direction,
+		Color:   color.Random(),
+		Id:      rand.Intn(100000),
+		FiredBy: firedBy,
 	}
 	p.RigidBody.LocalPosition = position
+	p.RigidBody.Velocity = direction.Mul(DefaultProjectileSpeed)
+	p.RigidBody.LocalScale = vector.New(0.5, 0.5)
 	return &p
 }
 
 func (p *Projectile) Update(dt float64) {
-	v := p.MoveDirection.Mul(p.Speed)
-	p.RigidBody.Velocity.AddSelf(v)
 	p.RigidBody.Update(dt)
-	p.RigidBody.Velocity.SubSelf(v)
 }

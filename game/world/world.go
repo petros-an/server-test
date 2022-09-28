@@ -33,3 +33,19 @@ func RestrictPositionWithinBorder(pos vector.Vector2D) vector.Vector2D {
 
 	return newPos
 }
+
+func IsOutsideWorld(pos vector.Vector2D) bool {
+	if pos.X < BorderXmin {
+		return true
+	}
+	if pos.X > BorderXmax {
+		return true
+	}
+	if pos.Y < BorderYmin {
+		return true
+	}
+	if pos.Y > BorderYmax {
+		return true
+	}
+	return false
+}
