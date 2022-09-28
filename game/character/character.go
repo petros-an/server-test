@@ -19,7 +19,7 @@ type Character struct {
 func RandomNew() *Character {
 	c := Character{}
 	c.RigidBody.LocalPosition = vector.Vector2D{X: rand.Float64()*80 - 40, Y: rand.Float64()*80 - 40}
-	c.RigidBody.LocalScale = vector.Vector2D{X: 5, Y: 5}
+	c.RigidBody.LocalScale = vector.Vector2D{X: 3, Y: 3}
 	c.Color = color.Random()
 	c.speed = DefaultVelMagnitude
 	return &c

@@ -9,7 +9,7 @@ import (
 	"github.com/petros-an/server-test/game/character"
 )
 
-const DefaultProjectileSpeed = 20
+const DefaultProjectileSpeed = 50
 
 type Projectile struct {
 	RigidBody rigidbody.RigidBody2D
