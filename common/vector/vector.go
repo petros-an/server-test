@@ -32,7 +32,7 @@ func (this Vector2D) Magnitude() float64 {
 }
 
 func (this Vector2D) MagnitudeSq() float64 {
-	return this.X*this.X + this.Y + this.Y
+	return this.X*this.X + this.Y*this.Y
 }
 
 func (this Vector2D) AngleR() float64 {
