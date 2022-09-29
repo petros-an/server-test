@@ -91,16 +91,16 @@ func (g *Game) UpdateCharacterDirection(playerId player.PlayerId, direction vect
 	}
 }
 
-func (g *Game) FireProjectile(playerId player.PlayerId, direction vector.Vector2D) {
+func (g *Game) FireProjectile(playerId player.PlayerId, target vector.Vector2D) {
 
 	player, exists := g.GetPlayer(playerId)
 	if !exists {
 		return
 	}
-	log.Println(fmt.Sprintf("projectile fired by %s with direction: %f, %f", player.PlayerId, direction.X, direction.Y))
+	// log.Println(fmt.Sprintf("projectile fired by %s with direction: %f, %f", player.PlayerId, target.X, target.Y))
 	g.Input <- ProjectileFiredUpdate{
 		Position:  player.Character.Position(),
-		Direction: direction,
+		Direction: target.Sub(player.Character.Position()).Normalized(),
 		FiredBy:   player,
 	}
 }

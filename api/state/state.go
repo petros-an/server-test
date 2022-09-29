@@ -88,20 +88,20 @@ func readInputsFromConnection(g *game.Game, conn *websocket.Conn, charId player.
 }
 
 func PropagatePlayerInput(input PlayerInputSchema, g *game.Game, playerId player.PlayerId) {
-	if input.Direction != nil {
+	if input.MoveDirection != nil {
 		g.UpdateCharacterDirection(
 			playerId,
 			vector.New(
-				input.Direction.X, input.Direction.Y,
+				input.MoveDirection.X, input.MoveDirection.Y,
 			),
 		)
 	}
 
-	if input.ProjectileFired != nil {
+	if input.ProjectileInput != nil {
 		g.FireProjectile(
 			playerId,
 			vector.New(
-				input.ProjectileFired.Direction.X, input.ProjectileFired.Direction.Y,
+				input.ProjectileInput.X, input.ProjectileInput.Y,
 			),
 		)
 	}
