@@ -13,21 +13,40 @@ type GameStateInput interface {
 
 //
 
-type DirectionUpdate struct {
+type CharacterMoveDirectionUpdate struct {
 	PlayerId  player.PlayerId
 	Direction vector.Vector2D
 }
 
-func (u DirectionUpdate) GetPlayerId() player.PlayerId {
+func (u CharacterMoveDirectionUpdate) GetPlayerId() player.PlayerId {
 	return u.PlayerId
 }
 
-func (u DirectionUpdate) UpdateState(s *GameState) {
+func (u CharacterMoveDirectionUpdate) UpdateState(s *GameState) {
 	if _, exists := s.Players[u.PlayerId]; !exists {
 		return
 	}
 
 	s.Players[u.PlayerId].Character.MoveDirection = u.Direction
+}
+
+//
+
+type CharacterRotationUpdate struct {
+	PlayerId  player.PlayerId
+	Direction vector.Vector2D
+}
+
+func (u CharacterRotationUpdate) GetPlayerId() player.PlayerId {
+	return u.PlayerId
+}
+
+func (u CharacterRotationUpdate) UpdateState(s *GameState) {
+	if _, exists := s.Players[u.PlayerId]; !exists {
+		return
+	}
+
+	s.Players[u.PlayerId].Character.RigidBody.SetRotation(u.Direction)
 }
 
 //

@@ -28,9 +28,10 @@ func New(
 		Id:      rand.Intn(100000),
 		FiredBy: firedBy,
 	}
-	p.RigidBody.LocalPosition = position
+	p.RigidBody.SetPosition(position)
+	p.RigidBody.SetScale(vector.New(0.5, 0.5))
+	p.RigidBody.SetRotation(direction)
 	p.RigidBody.Velocity = direction.Mul(DefaultProjectileSpeed)
-	p.RigidBody.LocalScale = vector.New(0.5, 0.5)
 	return &p
 }
 
