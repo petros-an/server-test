@@ -1,8 +1,6 @@
 package state
 
 import (
-	"log"
-
 	"github.com/petros-an/server-test/common/utils"
 	"github.com/petros-an/server-test/common/vector"
 	"github.com/petros-an/server-test/game/character"
@@ -98,9 +96,10 @@ func (s *GameState) Update() {
 
 	for _, p := range s.Projectiles {
 		for _, c := range s.Characters {
-			if p.CollidesWith(c) && p.FiredBy != c {
+			if p.CollidesWithCharacter(c) && p.FiredBy != c {
 				s.RemoveProjectile(p)
-				log.Printf("Projectile %d hit character %s", p.Id, c.Tag)
+				c.GetDamaged(p.Damage)
+				// log.Printf("Projectile %d hit character %s", p.Id, c.Tag)
 				break
 			}
 		}

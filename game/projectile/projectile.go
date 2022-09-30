@@ -13,11 +13,13 @@ import (
 )
 
 const DefaultProjectileSpeed = 50
+const DefaultProjectileDamage = 15
 
 type Projectile struct {
 	RigidBody rigidbody.RigidBody2D
 	Color     color.RGBColor
 	FiredBy   *character.Character
+	Damage    float64
 	Id        int
 }
 
@@ -27,9 +29,10 @@ func New(
 	direction vector.Vector2D,
 ) *Projectile {
 	p := Projectile{
-		Color:   color.Random(),
+		Color:   firedBy.Color,
 		Id:      rand.Intn(100000),
 		FiredBy: firedBy,
+		Damage:  DefaultProjectileDamage,
 	}
 	p.RigidBody.SetPosition(position)
 	p.RigidBody.SetScale(vector.New(0.5, 0.5))
