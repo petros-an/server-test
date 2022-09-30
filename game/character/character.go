@@ -68,6 +68,5 @@ func (c *Character) Die() {
 
 func (c *Character) Respawn() {
 	c.SetPosition(vector.RandomNew())
-	c.speed = 0
 	c.Health = DefaultHealth
 }
