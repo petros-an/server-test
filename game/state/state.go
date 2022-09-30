@@ -41,7 +41,7 @@ func (s *GameState) GetGameObjects() []gameobject.GameObject {
 	return res
 }
 
-func (s *GameState) RefreshPlayerVital(playerId player.PlayerId) {
+func (s *GameState) RefreshPlayerVitals(playerId player.PlayerId) {
 	if player, exists := s.GetPlayer(playerId); exists {
 		player.RefreshVitals()
 	}
@@ -98,10 +98,22 @@ func (s *GameState) Update() {
 		for _, c := range s.Characters {
 			if p.CollidesWithCharacter(c) && p.FiredBy != c {
 				s.RemoveProjectile(p)
-				c.GetDamaged(p.Damage)
+				died := c.GetDamaged(p.Damage)
+				if died {
+					s.GetPlayerFromCharacter(c).AddKill()
+				}
 				// log.Printf("Projectile %d hit character %s", p.Id, c.Tag)
 				break
 			}
 		}
 	}
+}
+
+func (s *GameState) GetPlayerFromCharacter(c *character.Character) *player.Player {
+	for _, p := range s.Players {
+		if p.Character == c {
+			return p
+		}
+	}
+	return nil
 }

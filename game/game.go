@@ -57,7 +57,7 @@ func (g *Game) Run() {
 			g.Output <- g.State
 		case input := <-g.Input:
 			input.UpdateState(&g.State)
-			g.State.RefreshPlayerVital(input.GetPlayerId())
+			g.State.RefreshPlayerVitals(input.GetPlayerId())
 		case <-evictorTicker.C:
 			removeInactivePlayers(&g.State)
 		case <-gameLoopTicker.C:
@@ -121,7 +121,7 @@ func (g *Game) GetPlayer(playerId player.PlayerId) (*player.Player, bool) {
 }
 
 func applyVitalsUpdate(state *state.GameState, id player.PlayerId) {
-	state.RefreshPlayerVital(id)
+	state.RefreshPlayerVitals(id)
 }
 
 func applyGameLoopUpdate(s *state.GameState) {
@@ -135,4 +135,8 @@ func removeInactivePlayers(state *state.GameState) {
 			log.Println("kicking due to connection timeout: " + id)
 		}
 	}
+}
+
+func (g *Game) GetScores() state.Scores {
+	return g.State.GetScores()
 }

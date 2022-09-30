@@ -2,6 +2,7 @@ package vector
 
 import (
 	"math"
+	"math/rand"
 )
 
 type Vector2D struct {
@@ -11,6 +12,14 @@ type Vector2D struct {
 
 func New(x float64, y float64) Vector2D {
 	return Vector2D{X: x, Y: y}
+}
+
+func RandomNew() Vector2D {
+	return Vector2D{X: rand.Float64()*80 - 40, Y: rand.Float64()*80 - 40}
+}
+
+func Null() Vector2D {
+	return Vector2D{X: 0, Y: 0}
 }
 
 func NewVector2DAngleR(angle float64) Vector2D {

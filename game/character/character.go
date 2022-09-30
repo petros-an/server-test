@@ -1,10 +1,9 @@
 package character
 
 import (
-	"math/rand"
-
 	"github.com/petros-an/server-test/common/color"
 	"github.com/petros-an/server-test/common/rigidbody"
+	"github.com/petros-an/server-test/common/utils"
 	"github.com/petros-an/server-test/common/vector"
 	"github.com/petros-an/server-test/game/world"
 )
@@ -20,7 +19,7 @@ type Character struct {
 
 func RandomNew() *Character {
 	c := Character{}
-	c.RigidBody.LocalPosition = vector.Vector2D{X: rand.Float64()*80 - 40, Y: rand.Float64()*80 - 40}
+	c.RigidBody.LocalPosition = vector.RandomNew()
 	c.RigidBody.LocalScale = vector.Vector2D{X: 3, Y: 3}
 	c.Color = color.Random()
 	c.speed = DefaultSpeed
@@ -54,16 +53,21 @@ func (c *Character) SetMoveDirection(direction vector.Vector2D) {
 	c.MoveDirection = direction
 }
 
-func (c *Character) GetDamaged(damage float64) {
-	if c.Health < 0 {
-		return
-	}
-	c.Health -= damage
-	if c.Health < 0 {
+func (c *Character) GetDamaged(damage float64) bool {
+	c.Health = utils.Max(c.Health-damage, 0)
+	if c.Health == 0 {
 		c.Die()
-		c.Health = 0
+		return true
 	}
+	return false
 }
 
 func (c *Character) Die() {
+	c.Respawn()
+}
+
+func (c *Character) Respawn() {
+	c.SetPosition(vector.RandomNew())
+	c.speed = 0
+	c.Health = DefaultHealth
 }
