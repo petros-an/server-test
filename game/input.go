@@ -3,11 +3,11 @@ package game
 import (
 	"github.com/petros-an/server-test/common/vector"
 	"github.com/petros-an/server-test/game/player"
-	"github.com/petros-an/server-test/game/projectile"
+	"github.com/petros-an/server-test/game/state"
 )
 
 type GameStateInput interface {
-	UpdateState(*GameState)
+	UpdateState(*state.GameState)
 	GetPlayerId() player.PlayerId
 }
 
@@ -22,12 +22,8 @@ func (u CharacterMoveDirectionUpdate) GetPlayerId() player.PlayerId {
 	return u.PlayerId
 }
 
-func (u CharacterMoveDirectionUpdate) UpdateState(s *GameState) {
-	if _, exists := s.Players[u.PlayerId]; !exists {
-		return
-	}
-
-	s.Players[u.PlayerId].Character.MoveDirection = u.Direction
+func (u CharacterMoveDirectionUpdate) UpdateState(s *state.GameState) {
+	s.UpdatePlayerMoveDirection(u.PlayerId, u.Direction)
 }
 
 //
@@ -41,7 +37,7 @@ func (u CharacterRotationUpdate) GetPlayerId() player.PlayerId {
 	return u.PlayerId
 }
 
-func (u CharacterRotationUpdate) UpdateState(s *GameState) {
+func (u CharacterRotationUpdate) UpdateState(s *state.GameState) {
 	if _, exists := s.Players[u.PlayerId]; !exists {
 		return
 	}
@@ -59,14 +55,8 @@ func (u NewPlayerUpdate) GetPlayerId() player.PlayerId {
 	return u.PlayerId
 }
 
-func (u NewPlayerUpdate) UpdateState(state *GameState) {
-	playerId := u.PlayerId
-	if _, exists := state.Players[playerId]; exists {
-		return
-	}
-	newPlayer := player.New(playerId)
-	state.Players[playerId] = newPlayer
-	state.Characters = append(state.Characters, newPlayer.Character)
+func (u NewPlayerUpdate) UpdateState(state *state.GameState) {
+	state.AddPlayerIfNotExists(u.PlayerId)
 }
 
 //
@@ -81,6 +71,6 @@ func (u ProjectileFiredUpdate) GetPlayerId() player.PlayerId {
 	return u.FiredBy.PlayerId
 }
 
-func (u ProjectileFiredUpdate) UpdateState(state *GameState) {
-	state.Projectiles = append(state.Projectiles, projectile.New(u.FiredBy.Character, u.Position, u.Direction))
+func (u ProjectileFiredUpdate) UpdateState(s *state.GameState) {
+	s.AddProjectile(u.FiredBy, u.Position, u.Direction)
 }

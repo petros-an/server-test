@@ -5,39 +5,27 @@ import (
 	"log"
 	"time"
 
-	"github.com/petros-an/server-test/common/utils"
 	"github.com/petros-an/server-test/common/vector"
-	"github.com/petros-an/server-test/game/character"
 	"github.com/petros-an/server-test/game/config"
 	"github.com/petros-an/server-test/game/player"
-	"github.com/petros-an/server-test/game/projectile"
-	"github.com/petros-an/server-test/game/world"
+	"github.com/petros-an/server-test/game/state"
 )
 
-type GameState struct {
-	Characters  []*character.Character
-	Players     map[player.PlayerId]*player.Player
-	Projectiles []*projectile.Projectile
-}
-
 type Game struct {
-	State  GameState
+	State  state.GameState
 	Input  chan GameStateInput
-	Output chan GameState
+	Output chan state.GameState
 }
 
 func New() *Game {
 
-	outputChannel := make(chan GameState, 100)
+	outputChannel := make(chan state.GameState, 100)
 	inputChannel := make(chan GameStateInput, 100)
 
 	return &Game{
 		Input:  inputChannel,
 		Output: outputChannel,
-		State: GameState{
-			Characters: []*character.Character{},
-			Players:    map[player.PlayerId]*player.Player{},
-		},
+		State:  state.New(),
 	}
 }
 
@@ -116,8 +104,6 @@ func (g *Game) FireProjectile(playerId player.PlayerId, target vector.Vector2D) 
 	if !exists {
 		return
 	}
-	// log.Println(fmt.Sprintf("projectile fired by %s with direction: %f, %f", player.PlayerId, target.X, target.Y))
-
 	g.Input <- ProjectileFiredUpdate{
 		Position:  player.Character.Position(),
 		Direction: target.Sub(player.Character.Position()).Normalized(),
@@ -125,56 +111,26 @@ func (g *Game) FireProjectile(playerId player.PlayerId, target vector.Vector2D) 
 	}
 }
 
-func (g *Game) ReadState() chan GameState {
+func (g *Game) ReadState() chan state.GameState {
 	return g.Output
 }
 
 func (g *Game) GetPlayer(playerId player.PlayerId) (*player.Player, bool) {
-	player, exists := g.State.Players[playerId]
-	return player, exists
+	return g.State.GetPlayer(playerId)
 }
 
-func applyVitalsUpdate(state *GameState, id player.PlayerId) {
-	if _, exists := state.Players[id]; exists {
-		state.Players[id].RefreshVitals()
-	}
+func applyVitalsUpdate(state *state.GameState, id player.PlayerId) {
+	state.RefreshVitals(id)
 }
 
-func applyGameLoopUpdate(state *GameState) {
-	for _, c := range state.Characters {
-		c.Update(config.DT)
-		c.SetPosition(
-			world.RestrictPositionWithinBorder(c.Position()),
-		)
-	}
-
-	for _, p := range state.Projectiles {
-		p.Update(config.DT)
-		if world.IsOutsideWorld(p.RigidBody.LocalPosition) {
-			utils.RemoveElementFromSlice(&state.Projectiles, p)
-		}
-	}
-
-	for _, p := range state.Projectiles {
-		for _, c := range state.Characters {
-			if c.Position().Sub(p.RigidBody.LocalPosition).MagnitudeSq() < utils.Pow2(c.RigidBody.LocalScale.X/2+p.RigidBody.LocalScale.Y/2) {
-				if p.FiredBy != c {
-					utils.RemoveElementFromSlice(&state.Projectiles, p)
-					log.Printf("Projectile %d hit character %s", p.Id, c.Tag)
-					break
-				}
-
-			}
-		}
-	}
-
+func applyGameLoopUpdate(s *state.GameState) {
+	s.Update()
 }
 
-func removeInactivePlayers(state *GameState) {
+func removeInactivePlayers(state *state.GameState) {
 	for id, p := range state.Players {
 		if time.Since(p.LastVital) > config.EVICTION_INTERVAL {
-			utils.RemoveElementFromSlice(&state.Characters, p.Character)
-			delete(state.Players, id)
+			state.RemovePlayer(p.PlayerId)
 			log.Println("kicking due to connection timeout: " + id)
 		}
 	}

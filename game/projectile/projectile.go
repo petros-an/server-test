@@ -5,8 +5,11 @@ import (
 
 	"github.com/petros-an/server-test/common/color"
 	"github.com/petros-an/server-test/common/rigidbody"
+	"github.com/petros-an/server-test/common/utils"
 	"github.com/petros-an/server-test/common/vector"
 	"github.com/petros-an/server-test/game/character"
+	gameobject "github.com/petros-an/server-test/game/gameObject"
+	"github.com/petros-an/server-test/game/world"
 )
 
 const DefaultProjectileSpeed = 50
@@ -37,4 +40,16 @@ func New(
 
 func (p *Projectile) Update(dt float64) {
 	p.RigidBody.Update(dt)
+}
+
+func (p *Projectile) IsOutsideWorld() bool {
+	return world.IsOutsideWorld(p.RigidBody.Position())
+}
+
+func (p *Projectile) CollidesWith(o gameobject.GameObject) bool {
+	return false
+}
+
+func (p *Projectile) CollidesWithCharacter(c *character.Character) bool {
+	return c.Position().Sub(p.RigidBody.LocalPosition).MagnitudeSq() < utils.Pow2(c.RigidBody.LocalScale.X/2+p.RigidBody.LocalScale.Y/2)
 }

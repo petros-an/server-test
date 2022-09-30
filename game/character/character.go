@@ -6,6 +6,7 @@ import (
 	"github.com/petros-an/server-test/common/color"
 	"github.com/petros-an/server-test/common/rigidbody"
 	"github.com/petros-an/server-test/common/vector"
+	"github.com/petros-an/server-test/game/world"
 )
 
 type Character struct {
@@ -40,4 +41,12 @@ func (c *Character) Update(dt float64) {
 	c.RigidBody.Velocity.AddSelf(v)
 	c.RigidBody.Update(dt)
 	c.RigidBody.Velocity.SubSelf(v)
+
+	c.SetPosition(
+		world.RestrictPositionWithinBorder(c.Position()),
+	)
+}
+
+func (c *Character) SetMoveDirection(direction vector.Vector2D) {
+	c.MoveDirection = direction
 }
