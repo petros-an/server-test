@@ -43,7 +43,7 @@ func (g *Game) Run() {
 
 	outputTicker := time.NewTicker(time.Duration(int64(config.SendTickerSeconds*1000)) * time.Millisecond)
 	gameLoopTicker := time.NewTicker(time.Duration(int64(config.DT*1000)) * time.Millisecond)
-	// evictorTicker := time.NewTicker(time.Second)
+	evictorTicker := time.NewTicker(time.Second)
 
 	go func() {
 		for {
@@ -57,8 +57,9 @@ func (g *Game) Run() {
 			g.Output <- g.State
 		case input := <-g.Input:
 			input.UpdateState(&g.State)
-		// case <-evictorTicker.C:
-		// 	removeInactivePlayers(&g.State)
+			g.State.RefreshPlayerVital(input.GetPlayerId())
+		case <-evictorTicker.C:
+			removeInactivePlayers(&g.State)
 		case <-gameLoopTicker.C:
 			applyGameLoopUpdate(&g.State)
 		}
@@ -120,7 +121,7 @@ func (g *Game) GetPlayer(playerId player.PlayerId) (*player.Player, bool) {
 }
 
 func applyVitalsUpdate(state *state.GameState, id player.PlayerId) {
-	state.RefreshVitals(id)
+	state.RefreshPlayerVital(id)
 }
 
 func applyGameLoopUpdate(s *state.GameState) {

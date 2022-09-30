@@ -14,7 +14,7 @@ type Player struct {
 	PlayerId
 }
 
-func (p Player) RefreshVitals() {
+func (p *Player) RefreshVitals() {
 	p.LastVital = time.Now()
 }
 

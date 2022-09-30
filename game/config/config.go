@@ -7,5 +7,5 @@ const (
 	// FPS               = 50.0
 	DT                = 1 / FPS
 	SendTickerSeconds = 0.01
-	EVICTION_INTERVAL = 20 * time.Second
+	EVICTION_INTERVAL = 5 * time.Second
 )

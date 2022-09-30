@@ -41,7 +41,7 @@ func (s *GameState) GetGameObjects() []gameobject.GameObject {
 	return res
 }
 
-func (s *GameState) RefreshVitals(playerId player.PlayerId) {
+func (s *GameState) RefreshPlayerVital(playerId player.PlayerId) {
 	if player, exists := s.GetPlayer(playerId); exists {
 		player.RefreshVitals()
 	}
