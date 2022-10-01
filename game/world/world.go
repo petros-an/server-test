@@ -11,20 +11,20 @@ const (
 	BorderYmax = 40
 )
 
-func RestrictPositionWithinBorder(pos vector.Vector2D) vector.Vector2D {
+func RestrictPositionWithinBorder(position vector.Vector2D, halfSize vector.Vector2D) vector.Vector2D {
 
-	newPos := pos
-	if pos.X < BorderXmin {
-		newPos.X = BorderXmin
+	newPos := position
+	if position.X < BorderXmin+halfSize.X {
+		newPos.X = BorderXmin + halfSize.X
 	}
-	if pos.X > BorderXmax {
-		newPos.X = BorderXmax
+	if position.X > BorderXmax-halfSize.X {
+		newPos.X = BorderXmax - halfSize.X
 	}
-	if pos.Y < BorderYmin {
-		newPos.Y = BorderYmin
+	if position.Y < BorderYmin+halfSize.Y {
+		newPos.Y = BorderYmin + halfSize.Y
 	}
-	if pos.Y > BorderYmax {
-		newPos.Y = BorderYmax
+	if position.Y > BorderYmax-halfSize.Y {
+		newPos.Y = BorderYmax - halfSize.Y
 	}
 	// newPos.X = utils.Max(pos.X, BorderXmin)
 	// newPos.X = utils.Min(pos.X, BorderXmax)

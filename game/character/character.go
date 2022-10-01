@@ -45,7 +45,7 @@ func (c *Character) Update(dt float64) {
 	c.RigidBody.Velocity.SubSelf(v)
 
 	c.SetPosition(
-		world.RestrictPositionWithinBorder(c.Position()),
+		world.RestrictPositionWithinBorder(c.Position(), c.RigidBody.Scale().Div(2)),
 	)
 }
 
