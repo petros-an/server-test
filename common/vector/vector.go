@@ -40,6 +40,10 @@ func (this Vector2D) Magnitude() float64 {
 	return math.Sqrt(this.X*this.X + this.Y*this.Y)
 }
 
+func (this *Vector2D) SetMagnitude(newMagnitude float64) *Vector2D {
+	return this.Normalize().MulSelf(newMagnitude)
+}
+
 func (this Vector2D) MagnitudeSq() float64 {
 	return this.X*this.X + this.Y*this.Y
 }

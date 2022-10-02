@@ -34,6 +34,10 @@ func (c Character) Position() vector.Vector2D {
 	return c.RigidBody.Position()
 }
 
+func (c Character) MoveVelocity() vector.Vector2D {
+	return c.MoveDirection.Mul(c.speed)
+}
+
 func (c *Character) SetPosition(position vector.Vector2D) {
 	c.RigidBody.SetPosition(position)
 }

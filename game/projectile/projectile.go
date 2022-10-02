@@ -37,7 +37,9 @@ func New(
 	p.RigidBody.SetPosition(position)
 	p.RigidBody.SetScale(vector.New(0.5, 0.5))
 	p.RigidBody.SetRotation(direction)
-	p.RigidBody.Velocity = direction.Mul(DefaultProjectileSpeed)
+
+	p.RigidBody.Velocity = direction.Mul(DefaultProjectileSpeed).Add(firedBy.MoveVelocity())
+	p.RigidBody.Velocity.SetMagnitude(DefaultProjectileSpeed)
 	return &p
 }
 
