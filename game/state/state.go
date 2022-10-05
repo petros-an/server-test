@@ -100,7 +100,7 @@ func (s *GameState) Update() {
 				s.RemoveProjectile(p)
 				died := c.GetDamaged(p.Damage)
 				if died {
-					s.GetPlayerFromCharacter(c).AddKill()
+					s.GetPlayerFromCharacter(p.FiredBy).AddKill()
 				}
 				// log.Printf("Projectile %d hit character %s", p.Id, c.Tag)
 				break
