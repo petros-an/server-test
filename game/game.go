@@ -9,6 +9,7 @@ import (
 	"github.com/petros-an/server-test/game/config"
 	"github.com/petros-an/server-test/game/player"
 	"github.com/petros-an/server-test/game/state"
+	"github.com/petros-an/server-test/game/world"
 )
 
 type Game struct {
@@ -139,4 +140,8 @@ func removeInactivePlayers(state *state.GameState) {
 
 func (g *Game) GetScores() state.Scores {
 	return g.State.GetScores()
+}
+
+func (g *Game) GetWorldBorders() world.Borders {
+	return world.WorldBorders
 }

@@ -1,4 +1,4 @@
-package scores
+package gameinfo
 
 import (
 	"log"
@@ -7,6 +7,7 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/petros-an/server-test/api/common"
+	"github.com/petros-an/server-test/api/gameinfo/schema"
 	"github.com/petros-an/server-test/common/utils"
 	"github.com/petros-an/server-test/game"
 )
@@ -24,7 +25,9 @@ func GetEndpoint(
 
 			for {
 				scores := g.GetScores()
-				str := utils.SerializeJson(scores)
+				worldBorders := g.GetWorldBorders()
+				data := schema.Build(scores, worldBorders)
+				str := utils.SerializeJson(data)
 				err = conn.WriteMessage(websocket.TextMessage, str)
 				if err != nil {
 					log.Println("error during scores sending:", err)

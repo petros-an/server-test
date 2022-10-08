@@ -4,8 +4,8 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/petros-an/server-test/api/gameinfo"
 	"github.com/petros-an/server-test/api/ping"
-	"github.com/petros-an/server-test/api/scores"
 	"github.com/petros-an/server-test/api/state"
 	"github.com/petros-an/server-test/common/utils"
 	"github.com/petros-an/server-test/game"
@@ -28,8 +28,8 @@ func Run(
 	)
 
 	http.HandleFunc(
-		"/scores",
-		scores.GetEndpoint(g),
+		"/gameinfo",
+		gameinfo.GetEndpoint(g),
 	)
 
 	log.Println("Starting server on " + addr)
