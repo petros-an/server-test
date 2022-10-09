@@ -5,46 +5,37 @@ import (
 )
 
 type Transform2D struct {
-	LocalPosition vector.Vector2D
-	LocalScale    vector.Vector2D
-	LocalRotation vector.Vector2D
+	vector.PSR2D
 
 	Parent *Transform2D
 }
 
-func (this Transform2D) Position() vector.Vector2D {
+func (this Transform2D) FinalPosition() vector.Vector2D {
 	if this.Parent == nil {
-		return this.LocalPosition
+		return this.Position
 	}
-	return this.LocalPosition.MulV(this.Parent.Scale()).MulC(this.Parent.Rotation()).Add(this.Parent.Position())
+	return this.Position.MulV(this.Parent.Scale).MulC(this.Parent.FinalRotation()).Add(this.Parent.FinalPosition())
 }
 
-func (this Transform2D) Scale() vector.Vector2D {
+func (this Transform2D) FinalRotation() vector.Vector2D {
 	if this.Parent == nil {
-		return this.LocalScale
+		return this.Rotation
 	}
-	return this.LocalScale.MulV(this.Parent.Scale().MulConj(this.Parent.Rotation()))
-}
-
-func (this Transform2D) Rotation() vector.Vector2D {
-	if this.Parent == nil {
-		return this.LocalRotation
-	}
-	return this.LocalRotation.MulC(this.Parent.Rotation())
+	return this.Rotation.MulC(this.Parent.FinalRotation())
 }
 
 func (this *Transform2D) SetPosition(position vector.Vector2D) {
 	if this.Parent == nil {
-		this.LocalPosition = position
+		this.Position = position
 	}
-	this.LocalPosition = position // TODO
+	this.Position = position // TODO
 }
 
 func (this *Transform2D) SetScale(scale vector.Vector2D) {
 	if this.Parent == nil {
-		this.LocalScale = scale
+		this.Scale = scale
 	}
-	this.LocalScale = scale // TODO
+	this.Scale = scale // TODO
 }
 
 func (this *Transform2D) SetRotation(rotation vector.Vector2D) {
@@ -59,23 +50,23 @@ func (this *Transform2D) SetRotation(rotation vector.Vector2D) {
 // }
 
 func (this *Transform2D) SetLocalRotationV(rotation vector.Vector2D) {
-	this.LocalRotation = rotation.Normalized()
+	this.Rotation = rotation.Normalized()
 }
 
 func (this *Transform2D) SetLocalRotationR(angle float64) {
-	this.LocalRotation = vector.NewVector2DAngleR(angle)
+	this.Rotation = vector.NewVector2DAngleR(angle)
 }
 
 func (this *Transform2D) SetLocalRotationD(angle float64) {
-	this.LocalRotation = vector.NewVector2DAngleD(angle)
+	this.Rotation = vector.NewVector2DAngleD(angle)
 }
 
 func (this Transform2D) Right() vector.Vector2D {
-	return this.LocalRotation
+	return this.Rotation
 }
 
 func (this Transform2D) Up() vector.Vector2D {
-	return this.LocalRotation.Rotate90()
+	return this.Rotation.Rotate90()
 }
 
 func (this *Transform2D) SetRight(newRight vector.Vector2D) {

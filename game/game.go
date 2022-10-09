@@ -5,6 +5,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/petros-an/server-test/common/color"
 	"github.com/petros-an/server-test/common/vector"
 	"github.com/petros-an/server-test/game/config"
 	"github.com/petros-an/server-test/game/player"
@@ -15,12 +16,50 @@ import (
 type Game struct {
 	State  state.GameState
 	Input  chan GameStateInput
-	Output chan state.GameState
+	Output chan GameStateOutput
+}
+
+type Character struct {
+	vector.PSR2D
+	Tag    string
+	Color  color.RGBColor
+	Health float64
+}
+type Projectile struct {
+	vector.PSR2D
+	Color color.RGBColor
+}
+
+type GameStateOutput struct {
+	Characters  []Character
+	Projectiles []Projectile
+}
+
+func StateToOutput(gameState state.GameState) GameStateOutput {
+	outState := GameStateOutput{
+		Characters:  make([]Character, len(gameState.Characters)),
+		Projectiles: make([]Projectile, len(gameState.Projectiles)),
+	}
+	for i, character := range gameState.Characters {
+		outState.Characters[i] = Character{
+			PSR2D:  character.RigidBody.PSR2D,
+			Tag:    character.Tag,
+			Color:  character.Color,
+			Health: character.Health,
+		}
+	}
+	for i, projectile := range gameState.Projectiles {
+		outState.Projectiles[i] = Projectile{
+			PSR2D: projectile.RigidBody.PSR2D,
+			Color: projectile.Color,
+		}
+	}
+	return outState
 }
 
 func New() *Game {
 
-	outputChannel := make(chan state.GameState, 100)
+	outputChannel := make(chan GameStateOutput, 100)
 	inputChannel := make(chan GameStateInput, 100)
 
 	return &Game{
@@ -33,7 +72,7 @@ func New() *Game {
 func (g *Game) String() string {
 	str := ""
 	for _, c := range g.State.Characters {
-		str += fmt.Sprintf("[x:%f, y:%f, vx: %f, vy: %f, id: %s],", c.RigidBody.LocalPosition.X, c.RigidBody.LocalPosition.Y, c.RigidBody.Velocity.X, c.RigidBody.Velocity.Y, c.Tag)
+		str += fmt.Sprintf("[x:%f, y:%f, vx: %f, vy: %f, id: %s],", c.RigidBody.Position.X, c.RigidBody.Position.Y, c.RigidBody.Velocity.X, c.RigidBody.Velocity.Y, c.Tag)
 	}
 	return str
 }
@@ -55,7 +94,7 @@ func (g *Game) Run() {
 	for {
 		select {
 		case <-outputTicker.C:
-			g.Output <- g.State
+			g.Output <- StateToOutput(g.State)
 		case input := <-g.Input:
 			input.UpdateState(&g.State)
 			g.State.RefreshPlayerVitals(input.GetPlayerId())
@@ -113,7 +152,7 @@ func (g *Game) FireProjectile(playerId player.PlayerId, target vector.Vector2D) 
 	}
 }
 
-func (g *Game) ReadState() chan state.GameState {
+func (g *Game) ReadStateOutpu() chan GameStateOutput {
 	return g.Output
 }
 

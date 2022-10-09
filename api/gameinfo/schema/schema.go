@@ -1,8 +1,6 @@
 package schema
 
 import (
-	"log"
-
 	"github.com/petros-an/server-test/game/player"
 	"github.com/petros-an/server-test/game/state"
 	"github.com/petros-an/server-test/game/world"
@@ -38,6 +36,6 @@ func Build(
 		Ymin: borders.Ymin,
 		Ymax: borders.Ymax,
 	}
-	log.Println(res)
+	// log.Println(res)
 	return res
 }

@@ -18,7 +18,7 @@ func RandomNew() Vector2D {
 	return Vector2D{X: rand.Float64()*80 - 40, Y: rand.Float64()*80 - 40}
 }
 
-func Null() Vector2D {
+func Zero() Vector2D {
 	return Vector2D{X: 0, Y: 0}
 }
 
@@ -46,6 +46,10 @@ func (this *Vector2D) SetMagnitude(newMagnitude float64) *Vector2D {
 
 func (this Vector2D) MagnitudeSq() float64 {
 	return this.X*this.X + this.Y*this.Y
+}
+
+func (this Vector2D) MagnitudeManhattan() float64 {
+	return math.Abs(this.X+this.Y) + math.Abs(this.X-this.Y)
 }
 
 func (this Vector2D) AngleR() float64 {
@@ -82,6 +86,16 @@ func (this Vector2D) Conj() Vector2D {
 
 func (this *Vector2D) ConjSelf() *Vector2D {
 	this.Y = -this.Y
+	return this
+}
+
+func (this Vector2D) AbsValues() Vector2D {
+	return Vector2D{X: math.Abs(this.X), Y: math.Abs(this.Y)}
+}
+
+func (this *Vector2D) AbsValuesSelf() *Vector2D {
+	this.X = math.Abs(this.X)
+	this.Y = math.Abs(this.Y)
 	return this
 }
 
@@ -199,6 +213,101 @@ func (this *Vector2D) Rotate90OtherSelf() *Vector2D {
 	return this
 }
 
+func (this Vector2D) RotateAroundCenter(rotation Vector2D, center Vector2D) Vector2D {
+	new := this
+	return *new.RotateAroundCenterSelf(rotation, center)
+}
+
+func (this *Vector2D) RotateAroundCenterSelf(rotation Vector2D, center Vector2D) *Vector2D {
+	return this.SubSelf(center).MulCSelf(rotation).AddSelf(center)
+}
+
+func (this Vector2D) ScaleFromCenter(scale Vector2D, center Vector2D) Vector2D {
+	new := this
+	return *new.ScaleFromCenterSelf(scale, center)
+}
+
+func (this *Vector2D) ScaleFromCenterSelf(scale Vector2D, center Vector2D) *Vector2D {
+	return this.SubSelf(center).MulVSelf(scale).AddSelf(center)
+}
+
+func (this Vector2D) UnScaleFromCenter(scale Vector2D, center Vector2D) Vector2D {
+	new := this
+	return *new.UnScaleFromCenterSelf(scale, center)
+}
+
+func (this *Vector2D) UnScaleFromCenterSelf(scale Vector2D, center Vector2D) *Vector2D {
+	return this.SubSelf(center).DivVSelf(scale).AddSelf(center)
+}
+
+func (this Vector2D) InvertXY() Vector2D {
+	return Vector2D{X: this.Y, Y: this.X}
+}
+
+func (this *Vector2D) InvertXYSelf() *Vector2D {
+	this.X, this.Y = this.Y, this.X
+	return this
+}
+
 func (this Vector2D) Equals(other Vector2D) bool {
 	return this.X == other.X && this.Y == other.Y
+}
+
+func (this Vector2D) Dot(other Vector2D) float64 {
+	return this.X*other.X + this.Y*other.Y
+}
+
+func (this Vector2D) DotNum(x float64, y float64) float64 {
+	return this.X*x + this.Y*y
+}
+
+type PSR2D struct {
+	Position Vector2D
+	Scale    Vector2D
+	Rotation Vector2D
+}
+
+func (this *PSR2D) SetPSR2D(other PSR2D, setPosition bool, setScale bool, setRotation bool) {
+	if setPosition {
+		this.Position = other.Position
+	}
+	if setScale {
+		this.Scale = other.Scale
+	}
+	if setRotation {
+		this.Rotation = other.Rotation
+	}
+}
+
+func (this PSR2D) RotationDifference(other PSR2D) Vector2D {
+	if this.Rotation.Equals(other.Rotation) {
+		return Vector2D{X: 1, Y: 0}
+	}
+	return this.Rotation.MulConj(other.Rotation)
+}
+
+func (this Vector2D) ApplyTransformation(psr PSR2D) Vector2D {
+	new := this
+	return *new.ApplyTransformationSelf(psr)
+}
+
+func (this *Vector2D) ApplyTransformationSelf(psr PSR2D) *Vector2D {
+	this.MulVSelf(psr.Scale)
+	if psr.Rotation.Y != 0 {
+		this.MulCSelf(psr.Rotation)
+	}
+	return this.AddSelf(psr.Position)
+}
+
+func (this Vector2D) RemoveTransformation(psr PSR2D) Vector2D {
+	new := this
+	return *new.RemoveTransformationSelf(psr)
+}
+
+func (this *Vector2D) RemoveTransformationSelf(psr PSR2D) *Vector2D {
+	this.SubSelf(psr.Position)
+	if psr.Rotation.Y != 0 {
+		return this.MulConjSelf(psr.Rotation)
+	}
+	return this.DivVSelf(psr.Scale)
 }

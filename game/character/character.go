@@ -1,29 +1,58 @@
 package character
 
 import (
+	"github.com/petros-an/server-test/common/collider"
+	"github.com/petros-an/server-test/common/collider/shape"
 	"github.com/petros-an/server-test/common/color"
 	"github.com/petros-an/server-test/common/rigidbody"
+	transform "github.com/petros-an/server-test/common/tansform"
 	"github.com/petros-an/server-test/common/utils"
 	"github.com/petros-an/server-test/common/vector"
+	"github.com/petros-an/server-test/game/gameObject"
 	"github.com/petros-an/server-test/game/world"
 )
 
 type Character struct {
 	RigidBody     rigidbody.RigidBody2D
+	toDestroy     bool
 	Tag           string
 	MoveDirection vector.Vector2D
 	speed         float64
 	Color         color.RGBColor
 	Health        float64
+	KillCount     uint
+	Collider      *collider.Collider2D
+}
+
+func (c *Character) GetType() int {
+	return gameObject.Character
+}
+
+func (c *Character) GetTransform() transform.Transform2D {
+	return c.RigidBody.Transform2D
+}
+
+func (c *Character) ToDestroy() bool {
+	return c.toDestroy
+}
+
+func (c *Character) Destroy() {
+	c.toDestroy = true
+}
+
+func (c *Character) AddKill() {
+	c.KillCount++
 }
 
 func RandomNew() *Character {
 	c := Character{}
-	c.RigidBody.LocalPosition = vector.RandomNew()
-	c.RigidBody.LocalScale = vector.Vector2D{X: 3, Y: 3}
+	c.RigidBody.Position = vector.RandomNew()
+	c.RigidBody.Scale = vector.Vector2D{X: 3, Y: 3}
 	c.Color = color.Random()
 	c.speed = DefaultSpeed
 	c.Health = DefaultHealth
+
+	c.Collider = collider.New(&c, &shape.Ellipse{})
 	return &c
 }
 
@@ -31,7 +60,7 @@ const DefaultSpeed float64 = 20
 const DefaultHealth float64 = 100
 
 func (c Character) Position() vector.Vector2D {
-	return c.RigidBody.Position()
+	return c.RigidBody.FinalPosition()
 }
 
 func (c Character) MoveVelocity() vector.Vector2D {
@@ -49,7 +78,7 @@ func (c *Character) Update(dt float64) {
 	c.RigidBody.Velocity.SubSelf(v)
 
 	c.SetPosition(
-		world.RestrictPositionWithinBorder(c.Position(), c.RigidBody.Scale().Div(2)),
+		world.RestrictPositionWithinBorder(c.Position(), c.RigidBody.Scale.Div(2)),
 	)
 }
 
@@ -58,6 +87,10 @@ func (c *Character) SetMoveDirection(direction vector.Vector2D) {
 }
 
 func (c *Character) GetDamaged(damage float64) bool {
+	// check if already dead
+	if c.Health == 0 {
+		return false
+	}
 	c.Health = utils.Max(c.Health-damage, 0)
 	if c.Health == 0 {
 		c.Die()

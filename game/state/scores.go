@@ -12,7 +12,7 @@ func (s *GameState) GetScores() Scores {
 	res := Scores{}
 	for _, p := range s.Players {
 		res[p.PlayerId] = PlayerScore{
-			KillCount: p.KillCount,
+			KillCount: p.KillCount(),
 		}
 	}
 	return res

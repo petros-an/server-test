@@ -12,6 +12,9 @@ func RemoveElementFromSlice[T comparable](slice *[]T, elementToRemove T) {
 		}
 	}
 }
+func RemoveElementFromSliceAtIndex[T comparable](slice *[]T, i int) {
+	*slice = append((*slice)[:i], (*slice)[i+1:]...)
+}
 
 func GetEnv(name string, fallback string) string {
 	val := os.Getenv(name)

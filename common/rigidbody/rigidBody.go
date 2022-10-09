@@ -15,5 +15,5 @@ func (rb *RigidBody2D) Update(dt float64) {
 }
 
 func (rb *RigidBody2D) updateVelocity(dt float64) {
-	rb.LocalPosition.AddSelf(rb.Velocity.Mul(dt))
+	rb.Position.AddSelf(rb.Velocity.Mul(dt))
 }

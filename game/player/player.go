@@ -12,15 +12,13 @@ type Player struct {
 	Character *character.Character
 	LastVital time.Time
 	PlayerId
-	KillCount uint
 }
 
 func (p *Player) RefreshVitals() {
 	p.LastVital = time.Now()
 }
-
-func (p *Player) AddKill() {
-	p.KillCount++
+func (p Player) KillCount() uint {
+	return p.Character.KillCount
 }
 
 func New(id PlayerId) *Player {
