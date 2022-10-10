@@ -286,6 +286,10 @@ func (this PSR2D) RotationDifference(other PSR2D) Vector2D {
 	return this.Rotation.MulConj(other.Rotation)
 }
 
+func (this PSR2D) HasUniformScale() bool {
+	return this.Scale.X == this.Scale.Y
+}
+
 func (this Vector2D) ApplyTransformation(psr PSR2D) Vector2D {
 	new := this
 	return *new.ApplyTransformationSelf(psr)

@@ -1,8 +1,6 @@
 package shape
 
 import (
-	"math"
-
 	"github.com/petros-an/server-test/common/vector"
 )
 
@@ -20,67 +18,67 @@ type Rectangle struct {
 	vector.PSR2D
 }
 
-func (rect Rectangle) GetPSR2D() vector.PSR2D {
-	return rect.PSR2D
+func (this Rectangle) GetPSR2D() vector.PSR2D {
+	return this.PSR2D
 }
 
-func (rect *Rectangle) SetPSR2D(psr vector.PSR2D, setPosition bool, setScale bool, setRotation bool) {
-	rect.PSR2D.SetPSR2D(psr, setPosition, setScale, setRotation)
+func (this *Rectangle) SetPSR2D(psr vector.PSR2D, setPosition bool, setScale bool, setRotation bool) {
+	this.PSR2D.SetPSR2D(psr, setPosition, setScale, setRotation)
 }
 
-func (rect Rectangle) IsPointInside(position vector.Vector2D) bool {
-	return position.RemoveTransformationSelf(rect.PSR2D).MagnitudeManhattan() <= 1
+func (this Rectangle) IsPointInside(position vector.Vector2D) bool {
+	return position.RemoveTransformationSelf(this.PSR2D).MagnitudeManhattan() <= (0.5 * 0.5)
 }
 
-func (rect Rectangle) OverlapsWithShape(shape Shape2D) bool {
-	return shape.OverlapsWithRectangle(rect)
+func (this Rectangle) OverlapsWithShape(shape Shape2D) bool {
+	return shape.OverlapsWithRectangle(this)
 }
 
-func (rect Rectangle) OverlapsWithRectangle(otherRect Rectangle) bool {
-	return RectangleOverlapsWithRectangle(rect, otherRect)
+func (this Rectangle) OverlapsWithRectangle(other Rectangle) bool {
+	return RectangleOverlapsWithRectangle(this, other)
 }
 
-func (rect Rectangle) OverlapsWithEllipse(ell Ellipse) bool {
-	return EllipseOverlapsWithRectangle(ell, rect)
+func (this Rectangle) OverlapsWithEllipse(ell Ellipse) bool {
+	return EllipseOverlapsWithRectangle(ell, this)
 }
 
-func (rect Rectangle) OverlapsWithPolygon(pol Polygon) bool {
-	return PolygonOverlapsWithPolygon(pol, PolygonFromRectangle(rect))
+func (this Rectangle) OverlapsWithPolygon(pol Polygon) bool {
+	return PolygonOverlapsWithPolygon(pol, PolygonFromRectangle(this))
 }
 
 type Ellipse struct {
 	vector.PSR2D
 }
 
-func (ell Ellipse) GetPSR2D() vector.PSR2D {
-	return ell.PSR2D
+func (this Ellipse) GetPSR2D() vector.PSR2D {
+	return this.PSR2D
 }
 
-func (ell *Ellipse) SetPSR2D(psr vector.PSR2D, setPosition bool, setScale bool, setRotation bool) {
-	ell.PSR2D.SetPSR2D(psr, setPosition, setScale, setRotation)
+func (this *Ellipse) SetPSR2D(psr vector.PSR2D, setPosition bool, setScale bool, setRotation bool) {
+	this.PSR2D.SetPSR2D(psr, setPosition, setScale, setRotation)
 }
 
-func (ell Ellipse) IsPointInside(position vector.Vector2D) bool {
-	return (position.RemoveTransformationSelf(ell.PSR2D)).MagnitudeSq() <= 1
+func (this Ellipse) IsPointInside(position vector.Vector2D) bool {
+	return (position.RemoveTransformationSelf(this.PSR2D)).MagnitudeSq() <= (0.5 * 0.5)
 }
 
-func (ell Ellipse) OverlapsWithShape(shape Shape2D) bool {
-	return shape.OverlapsWithEllipse(ell)
+func (this Ellipse) OverlapsWithShape(shape Shape2D) bool {
+	return shape.OverlapsWithEllipse(this)
 }
 
-func (ell Ellipse) OverlapsWithRectangle(rect Rectangle) bool {
-	return EllipseOverlapsWithRectangle(ell, rect)
+func (this Ellipse) OverlapsWithRectangle(rect Rectangle) bool {
+	return EllipseOverlapsWithRectangle(this, rect)
 }
 
-func (ell Ellipse) OverlapsWithEllipse(otherEll Ellipse) bool {
-	return PolygonOverlapsWithEllipse(PolygonFromEllipse(otherEll), ell)
+func (this Ellipse) OverlapsWithEllipse(other Ellipse) bool {
+	return EllipseOverlapsWithEllipse(other, this)
 }
 
-func (ell Ellipse) OverlapsWithPolygon(pol Polygon) bool {
-	return PolygonOverlapsWithEllipse(pol, ell)
+func (this Ellipse) OverlapsWithPolygon(pol Polygon) bool {
+	return PolygonOverlapsWithEllipse(pol, this)
 }
 
-func unitCircleOverlapsWithFiniteLine(lineStart vector.Vector2D, lineEnd vector.Vector2D) bool {
+func HalfUnitCircleOverlapsWithFiniteLine(lineStart vector.Vector2D, lineEnd vector.Vector2D) bool {
 	lineEnd.SubSelf(lineStart)
 
 	// (lineStart->origin) dot (lineStart->lineEnd) / |lineStart->lineEnd|^2 = (SC) dot (SE) / |SE|^2 =
@@ -92,22 +90,22 @@ func unitCircleOverlapsWithFiniteLine(lineStart vector.Vector2D, lineEnd vector.
 		return false
 	}
 
-	// distSq(S + SE*ration, O) <= 1
-	// |S + SE*ration|^2 <= 1
-	// |SE*ration + S|^2 <= 1
-	return lineEnd.MulSelf(ratio).AddSelf(lineStart).MagnitudeSq() <= 1
+	// distSq(S + SE*ration, O) <= 0.5^2
+	// |S + SE*ration|^2 <= 0.5^2
+	// |SE*ration + S|^2 <= 0.5^2
+	return lineEnd.MulSelf(ratio).AddSelf(lineStart).MagnitudeSq() <= (0.5 * 0.5)
 }
 
-func unitCircleOverlapsWithPolygon(pol Polygon) bool {
+func HalfUnitCircleOverlapsWithPolygon(pol Polygon) bool {
 	n := pol.NumberOfSides()
 	points := pol.TransformedPoints()
 	for i := 0; i < n; i++ {
 		currentPoint := &points[i]
 		nextPoint := &points[(i+1)%n]
-		if currentPoint.MagnitudeSq() <= 1 {
+		if currentPoint.MagnitudeSq() <= (0.5 * 0.5) {
 			return true
 		}
-		if unitCircleOverlapsWithFiniteLine(*currentPoint, *nextPoint) {
+		if HalfUnitCircleOverlapsWithFiniteLine(*currentPoint, *nextPoint) {
 			return true
 		}
 	}
@@ -123,12 +121,12 @@ type Polygon struct {
 	PointsAreTransformed bool
 }
 
-func (pol Polygon) GetPSR2D() vector.PSR2D {
-	return pol.PSR2D
+func (this Polygon) GetPSR2D() vector.PSR2D {
+	return this.PSR2D
 }
 
-func (pol *Polygon) SetPSR2D(psr vector.PSR2D, setPosition bool, setScale bool, setRotation bool) {
-	pol.PSR2D.SetPSR2D(psr, setPosition, setScale, setRotation)
+func (this *Polygon) SetPSR2D(psr vector.PSR2D, setPosition bool, setScale bool, setRotation bool) {
+	this.PSR2D.SetPSR2D(psr, setPosition, setScale, setRotation)
 }
 
 func (this *Polygon) TransformedPoints() []vector.Vector2D {
@@ -176,10 +174,10 @@ func PolygonFromEllipse(ell Ellipse) Polygon {
 	}
 }
 
-func (pol Polygon) IsPointInside(position vector.Vector2D) bool {
-	n := pol.NumberOfSides()
+func (this Polygon) IsPointInside(position vector.Vector2D) bool {
+	n := this.NumberOfSides()
 
-	points := pol.TransformedPoints()
+	points := this.TransformedPoints()
 	for i := 0; i < n; i++ {
 		currentPoint := points[i]
 		nextPoint := points[(i+1)%n]
@@ -192,24 +190,24 @@ func (pol Polygon) IsPointInside(position vector.Vector2D) bool {
 	return true
 }
 
-func (pol Polygon) OverlapsWithShape(shape Shape2D) bool {
-	return shape.OverlapsWithPolygon(pol)
+func (this Polygon) OverlapsWithShape(shape Shape2D) bool {
+	return shape.OverlapsWithPolygon(this)
 }
 
-func (pol Polygon) OverlapsWithRectangle(rect Rectangle) bool {
-	return PolygonOverlapsWithPolygon(pol, PolygonFromRectangle(rect))
+func (this Polygon) OverlapsWithRectangle(rect Rectangle) bool {
+	return PolygonOverlapsWithPolygon(this, PolygonFromRectangle(rect))
 }
 
-func (pol Polygon) OverlapsWithEllipse(ell Ellipse) bool {
-	return PolygonOverlapsWithEllipse(pol, ell)
+func (this Polygon) OverlapsWithEllipse(ell Ellipse) bool {
+	return PolygonOverlapsWithEllipse(this, ell)
 }
 
-func (pol Polygon) OverlapsWithPolygon(otherPol Polygon) bool {
-	return PolygonOverlapsWithPolygon(pol, otherPol)
+func (this Polygon) OverlapsWithPolygon(other Polygon) bool {
+	return PolygonOverlapsWithPolygon(this, other)
 }
 
-func (pol Polygon) NumberOfSides() int {
-	return len(pol.TransformedPoints())
+func (this Polygon) NumberOfSides() int {
+	return len(this.TransformedPoints())
 }
 
 // func regularPolygonEquation(numSides float64, position vector.Vector2D) float64 {
@@ -219,17 +217,19 @@ func (pol Polygon) NumberOfSides() int {
 
 // }
 
-func unitCircleOverlapsWithRectangle(rect Rectangle) bool {
+func HalfUnitCircleOverlapsWithRectangle(rect Rectangle) bool {
 
 	// put circle to origin and rotate as such that rectangle has no rotation anymore
-	rect.Position.MulConjSelf(rect.Rotation)
+	if rect.Rotation.Y != 0 {
+		rect.Position.MulConjSelf(rect.Rotation)
+	}
 
 	rect.Scale.AbsValuesSelf().DivSelf(2)
 	rect.Position.AbsValuesSelf().SubSelf(rect.Scale)
 
 	// put rectangle to 1st quarter (x,y>0) by abs the position as it is the same everywhere, then get the bottom left corner by sub size/2 from position
 	// if the bottom left corner is inside the unit circle then there is overlap
-	return rect.Position.MagnitudeSq() <= 1
+	return rect.Position.MagnitudeSq() <= (0.5 * 0.5)
 }
 
 func RectangleOverlapsWithRectangle(rect1 Rectangle, rect2 Rectangle) bool {
@@ -248,25 +248,34 @@ func RectangleOverlapsWithRectangle(rect1 Rectangle, rect2 Rectangle) bool {
 	return PolygonOverlapsWithPolygon(PolygonFromRectangle(rect1), PolygonFromRectangle(rect2))
 }
 
+func EllipseOverlapsWithEllipse(ell1 Ellipse, ell2 Ellipse) bool {
+	if ell1.HasUniformScale() && ell2.HasUniformScale() {
+		return ell1.Position.Sub(ell2.Position).MagnitudeSq()*4 <= (ell1.Scale.X+ell2.Scale.X)*(ell1.Scale.X+ell2.Scale.X)
+	}
+	return PolygonOverlapsWithEllipse(PolygonFromEllipse(ell1), ell2)
+}
+
 func EllipseOverlapsWithRectangle(ell Ellipse, rect Rectangle) bool {
-	if ell.Scale.X == ell.Scale.Y {
-		if ell.Scale.X != 1 {
+	if ell.HasUniformScale() {
+		if ell.Scale.X == 1 {
+			rect.Position.SubSelf(ell.Position)
+		} else {
 			rect.Scale.DivSelf(ell.Scale.X)
-			rect.Position.UnScaleFromCenterSelf(ell.Scale, ell.Position)
+			rect.Position.SubSelf(ell.Position).DivSelf(ell.Scale.X)
 		}
 	} else {
 		rotationDiff := rect.RotationDifference(ell.PSR2D)
-		if math.Abs(rotationDiff.X) == 1 && rotationDiff.Y == 0 {
+		if rotationDiff.Y == 0 {
 			rect.Scale.DivVSelf(ell.Scale)
-			rect.Position.UnScaleFromCenterSelf(ell.Scale, ell.Position)
-		} else if rotationDiff.X == 0 && math.Abs(rotationDiff.Y) == 1 {
-			rect.Scale.DivVSelf(ell.Scale.InvertXY())
-			rect.Position.UnScaleFromCenterSelf(ell.Scale, ell.Position)
+			rect.Position.SubSelf(ell.Position).DivVSelf(ell.Scale)
+		} else if rotationDiff.X == 0 {
+			rect.Scale.DivVSelf(*ell.Scale.InvertXYSelf())
+			rect.Position.SubSelf(ell.Position).DivVSelf(ell.Scale)
+		} else {
+			return PolygonOverlapsWithPolygon(PolygonFromEllipse(ell), PolygonFromRectangle(rect))
 		}
-		return PolygonOverlapsWithPolygon(PolygonFromEllipse(ell), PolygonFromRectangle(rect))
 	}
-	rect.Position.SubSelf(ell.Position)
-	return unitCircleOverlapsWithRectangle(rect)
+	return HalfUnitCircleOverlapsWithRectangle(rect)
 }
 
 func PolygonOverlapsWithEllipse(pol Polygon, ell Ellipse) bool {
@@ -275,7 +284,7 @@ func PolygonOverlapsWithEllipse(pol Polygon, ell Ellipse) bool {
 	for i := 0; i < n; i++ {
 		points[i].RemoveTransformationSelf(ell.PSR2D)
 	}
-	return unitCircleOverlapsWithPolygon(pol)
+	return HalfUnitCircleOverlapsWithPolygon(pol)
 }
 
 func PolygonOverlapsWithPolygon(pol1 Polygon, pol2 Polygon) bool {
