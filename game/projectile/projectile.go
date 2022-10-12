@@ -33,19 +33,19 @@ func New(
 	position vector.Vector2D,
 	direction vector.Vector2D,
 ) *Projectile {
+	velocity := direction.Mul(
+		DefaultProjectileSpeed,
+	).Add(firedBy.MoveVelocity())
+	velocity.SetMagnitude(DefaultProjectileSpeed)
 	p := Projectile{
 		Color:   firedBy.Color,
 		Id:      rand.Intn(100000),
 		FiredBy: firedBy,
 		Damage:  DefaultProjectileDamage,
+		RigidBody: rigidbody.New(
+			position, vector.New(0.5, 0.5), direction, velocity,
+		),
 	}
-	p.RigidBody.SetPosition(position)
-	p.RigidBody.SetScale(vector.New(0.5, 0.5))
-	p.RigidBody.SetRotation(direction)
-
-	p.RigidBody.Velocity = direction.Mul(DefaultProjectileSpeed).Add(firedBy.MoveVelocity())
-	p.RigidBody.Velocity.SetMagnitude(DefaultProjectileSpeed)
-
 	p.Collider = collider.New(&p, &shape.Ellipse{})
 	p.Collider.OnCollide = p.onCollide
 	return &p

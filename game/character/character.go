@@ -44,14 +44,15 @@ func (c *Character) AddKill() {
 }
 
 func RandomNew() *Character {
-	c := Character{}
-	c.RigidBody.Position = vector.RandomNew()
-	c.RigidBody.Scale = vector.Vector2D{X: 3, Y: 3}
-	c.Color = color.Random()
-	c.Health = DefaultHealth
-	v := c.MoveDirection.Mul(DefaultSpeed)
-	c.RigidBody.Velocity.AddSelf(v)
-
+	c := Character{
+		RigidBody: rigidbody.NewInRandomPosition(
+			vector.Vector2D{X: 3, Y: 3},
+			vector.Zero(),
+			vector.Zero(),
+		),
+		Color:  color.Random(),
+		Health: DefaultHealth,
+	}
 	c.Collider = collider.New(&c, &shape.Ellipse{})
 	return &c
 }

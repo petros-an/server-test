@@ -10,6 +10,20 @@ type Transform2D struct {
 	Parent *Transform2D
 }
 
+func New(
+	position vector.Vector2D,
+	scale vector.Vector2D,
+	rotation vector.Vector2D,
+) Transform2D {
+	return Transform2D{
+		PSR2D: vector.PSR2D{
+			Position: position,
+			Scale:    scale,
+			Rotation: rotation,
+		},
+	}
+}
+
 func (this Transform2D) FinalPosition() vector.Vector2D {
 	if this.Parent == nil {
 		return this.Position
