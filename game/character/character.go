@@ -17,7 +17,6 @@ type Character struct {
 	toDestroy     bool
 	Tag           string
 	MoveDirection vector.Vector2D
-	speed         float64
 	Color         color.RGBColor
 	Health        float64
 	KillCount     uint
@@ -49,8 +48,9 @@ func RandomNew() *Character {
 	c.RigidBody.Position = vector.RandomNew()
 	c.RigidBody.Scale = vector.Vector2D{X: 3, Y: 3}
 	c.Color = color.Random()
-	c.speed = DefaultSpeed
 	c.Health = DefaultHealth
+	v := c.MoveDirection.Mul(DefaultSpeed)
+	c.RigidBody.Velocity.AddSelf(v)
 
 	c.Collider = collider.New(&c, &shape.Ellipse{})
 	return &c
@@ -64,7 +64,7 @@ func (c Character) Position() vector.Vector2D {
 }
 
 func (c Character) MoveVelocity() vector.Vector2D {
-	return c.MoveDirection.Mul(c.speed)
+	return c.MoveDirection.Mul(DefaultSpeed)
 }
 
 func (c *Character) SetPosition(position vector.Vector2D) {
@@ -72,10 +72,7 @@ func (c *Character) SetPosition(position vector.Vector2D) {
 }
 
 func (c *Character) Update(dt float64) {
-	v := c.MoveDirection.Mul(c.speed)
-	c.RigidBody.Velocity.AddSelf(v)
 	c.RigidBody.Update(dt)
-	c.RigidBody.Velocity.SubSelf(v)
 
 	c.SetPosition(
 		world.RestrictPositionWithinBorder(c.Position(), c.RigidBody.Scale.Div(2)),
@@ -84,6 +81,9 @@ func (c *Character) Update(dt float64) {
 
 func (c *Character) SetMoveDirection(direction vector.Vector2D) {
 	c.MoveDirection = direction
+	v := c.MoveDirection.Mul(DefaultSpeed)
+	c.RigidBody.Velocity = vector.Zero()
+	c.RigidBody.Velocity.AddSelf(v)
 }
 
 func (c *Character) GetDamaged(damage float64) bool {
