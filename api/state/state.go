@@ -42,9 +42,9 @@ func GetEndpoint(
 
 func sendStateToConnection(g *game.Game, conn *websocket.Conn) {
 
-	for newState := range g.ReadStateOutpu() {
-
-		message := utils.SerializeJson(newState)
+	for newState := range g.ReadState() {
+		output := StateToOutput(newState)
+		message := utils.SerializeJson(output)
 		err := conn.WriteMessage(websocket.TextMessage, message)
 		if err != nil {
 			log.Println("write:", err)
