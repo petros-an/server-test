@@ -24,7 +24,7 @@ type Character struct {
 	Collider      *collider.Collider2D
 }
 
-func (c *Character) GetType() int {
+func (c *Character) GetType() gameObject.GameObjectType {
 	return gameObject.Character
 }
 

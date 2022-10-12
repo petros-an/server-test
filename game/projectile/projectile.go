@@ -51,7 +51,7 @@ func New(
 	return &p
 }
 
-func (p *Projectile) GetType() int {
+func (p *Projectile) GetType() gameObject.GameObjectType {
 	return gameObject.Projectile
 }
 
