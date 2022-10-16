@@ -12,20 +12,20 @@ import (
 	"github.com/petros-an/server-test/common/vector"
 	"github.com/petros-an/server-test/game/character"
 	"github.com/petros-an/server-test/game/gameObject"
-	"github.com/petros-an/server-test/game/world"
 )
 
 const DefaultProjectileSpeed = 50
 const DefaultProjectileDamage = 13
 
 type Projectile struct {
+	gameObject.GameObjectBasic
+
 	RigidBody rigidbody.RigidBody2D
-	toDestroy bool
 	Color     color.RGBColor
 	FiredBy   *character.Character
 	Damage    float64
 	Id        int
-	Collider  *collider.Collider2D
+	Collider  collider.Collider2D
 }
 
 func New(
@@ -46,8 +46,11 @@ func New(
 			position, vector.New(0.5, 0.5), direction, velocity,
 		),
 	}
-	p.Collider = collider.New(&p, &shape.Ellipse{})
-	p.Collider.OnCollide = p.onCollide
+
+	coll := collider.NewBasic(&p, &shape.Ellipse{})
+	coll.OnCollideField = p.onCollide
+	p.Collider = coll
+
 	return &p
 }
 
@@ -59,20 +62,8 @@ func (p *Projectile) GetTransform() transform.Transform2D {
 	return p.RigidBody.Transform2D
 }
 
-func (p *Projectile) ToDestroy() bool {
-	return p.toDestroy
-}
-
-func (p *Projectile) Destroy() {
-	p.toDestroy = true
-}
-
 func (p *Projectile) Update(dt float64) {
 	p.RigidBody.Update(dt)
-}
-
-func (p *Projectile) IsOutsideWorld() bool {
-	return world.IsOutsideWorld(p.RigidBody.FinalPosition())
 }
 
 func (p *Projectile) CollidesWithCharacter(c *character.Character) bool {

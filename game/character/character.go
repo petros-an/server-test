@@ -9,18 +9,18 @@ import (
 	"github.com/petros-an/server-test/common/utils"
 	"github.com/petros-an/server-test/common/vector"
 	"github.com/petros-an/server-test/game/gameObject"
-	"github.com/petros-an/server-test/game/world"
 )
 
 type Character struct {
+	gameObject.GameObjectBasic
+
 	RigidBody     rigidbody.RigidBody2D
-	toDestroy     bool
 	Tag           string
 	MoveDirection vector.Vector2D
 	Color         color.RGBColor
 	Health        float64
 	KillCount     uint
-	Collider      *collider.Collider2D
+	Collider      collider.Collider2D
 }
 
 func (c *Character) GetType() gameObject.GameObjectType {
@@ -31,14 +31,6 @@ func (c *Character) GetTransform() transform.Transform2D {
 	return c.RigidBody.Transform2D
 }
 
-func (c *Character) ToDestroy() bool {
-	return c.toDestroy
-}
-
-func (c *Character) Destroy() {
-	c.toDestroy = true
-}
-
 func (c *Character) AddKill() {
 	c.KillCount++
 }
@@ -47,13 +39,15 @@ func RandomNew() *Character {
 	c := Character{
 		RigidBody: rigidbody.NewInRandomPosition(
 			vector.Vector2D{X: 3, Y: 3},
-			vector.Zero(),
+			vector.Vector2D{X: 1, Y: 0},
 			vector.Zero(),
 		),
 		Color:  color.Random(),
 		Health: DefaultHealth,
 	}
-	c.Collider = collider.New(&c, &shape.Ellipse{})
+
+	c.Collider = collider.NewBasic(&c, &shape.Ellipse{})
+
 	return &c
 }
 
@@ -74,10 +68,6 @@ func (c *Character) SetPosition(position vector.Vector2D) {
 
 func (c *Character) Update(dt float64) {
 	c.RigidBody.Update(dt)
-
-	c.SetPosition(
-		world.RestrictPositionWithinBorder(c.Position(), c.RigidBody.Scale.Div(2)),
-	)
 }
 
 func (c *Character) SetMoveDirection(direction vector.Vector2D) {

@@ -1,6 +1,7 @@
 package vector
 
 import (
+	"fmt"
 	"math"
 	"math/rand"
 )
@@ -8,6 +9,10 @@ import (
 type Vector2D struct {
 	X float64 `json:"x"`
 	Y float64 `json:"y"`
+}
+
+func (this Vector2D) String() string {
+	return fmt.Sprintf("(%f, %f)", this.X, this.Y)
 }
 
 func New(x float64, y float64) Vector2D {
@@ -37,7 +42,11 @@ func NewVector2DMagnAngleD(magnitude float64, angle float64) Vector2D {
 }
 
 func (this Vector2D) Magnitude() float64 {
-	return math.Sqrt(this.X*this.X + this.Y*this.Y)
+	m := this.X*this.X + this.Y*this.Y
+	if m == 1 {
+		return 1
+	}
+	return math.Sqrt(m)
 }
 
 func (this *Vector2D) SetMagnitude(newMagnitude float64) *Vector2D {
@@ -231,7 +240,7 @@ func (this *Vector2D) ScaleFromCenterSelf(scale Vector2D, center Vector2D) *Vect
 	return this.SubSelf(center).MulVSelf(scale).AddSelf(center)
 }
 
-func (this Vector2D) UnScaleFromCenter(scale Vector2D, center Vector2D) Vector2D {
+func (this Vector2D) UnscaleFromCenter(scale Vector2D, center Vector2D) Vector2D {
 	new := this
 	return *new.UnScaleFromCenterSelf(scale, center)
 }

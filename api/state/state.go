@@ -45,6 +45,9 @@ func sendStateToConnection(g *game.Game, conn *websocket.Conn) {
 	for newState := range g.ReadState() {
 		output := StateToOutput(newState)
 		message := utils.SerializeJson(output)
+		if message == nil || len(message) == 0 {
+			continue
+		}
 		err := conn.WriteMessage(websocket.TextMessage, message)
 		if err != nil {
 			log.Println("write:", err)

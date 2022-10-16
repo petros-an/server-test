@@ -12,7 +12,14 @@ func RemoveElementFromSlice[T comparable](slice *[]T, elementToRemove T) {
 		}
 	}
 }
-func RemoveElementFromSliceAtIndex[T comparable](slice *[]T, i int) {
+func RemoveElementFromSliceOfInterfaces(slice *[]interface{}, elementToRemove interface{}) {
+	for i, v := range *slice {
+		if v == elementToRemove {
+			*slice = append((*slice)[:i], (*slice)[i+1:]...)
+		}
+	}
+}
+func RemoveElementFromSliceAtIndex[T any](slice *[]T, i int) {
 	*slice = append((*slice)[:i], (*slice)[i+1:]...)
 }
 

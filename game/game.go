@@ -22,11 +22,13 @@ func New() *Game {
 
 	outputChannel := make(chan state.GameState, 100)
 	inputChannel := make(chan GameStateInput, 100)
+	gameState := state.New()
+	gameState.SetUp()
 
 	return &Game{
 		Input:  inputChannel,
 		Output: outputChannel,
-		State:  state.New(),
+		State:  gameState,
 	}
 }
 

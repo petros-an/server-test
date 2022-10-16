@@ -9,13 +9,14 @@ import (
 	gameobject "github.com/petros-an/server-test/game/gameObject"
 	"github.com/petros-an/server-test/game/player"
 	"github.com/petros-an/server-test/game/projectile"
+	"github.com/petros-an/server-test/game/world"
 )
 
 type GameState struct {
 	Characters  []*character.Character
 	Players     map[player.PlayerId]*player.Player
 	Projectiles []*projectile.Projectile
-	Colliders   []*collider.Collider2D
+	Colliders   []collider.Collider2D
 }
 
 func New() GameState {
@@ -23,8 +24,16 @@ func New() GameState {
 		Characters:  []*character.Character{},
 		Players:     map[player.PlayerId]*player.Player{},
 		Projectiles: []*projectile.Projectile{},
+		Colliders:   []collider.Collider2D{},
 	}
 	return s
+}
+
+func (s *GameState) SetUp() {
+	borders := world.SetUpWorldBorders()
+	for _, border := range borders {
+		s.AddCollider(border.Collider)
+	}
 }
 
 func (s *GameState) GetPlayer(playerId player.PlayerId) (*player.Player, bool) {
@@ -69,14 +78,18 @@ func (s *GameState) AddPlayerIfNotExists(playerId player.PlayerId) {
 	newPlayer := player.New(playerId)
 	s.Players[playerId] = newPlayer
 	s.Characters = append(s.Characters, newPlayer.Character)
-	s.Colliders = append(s.Colliders, newPlayer.Character.Collider)
+	s.AddCollider(newPlayer.Character.Collider)
 }
 
 func (s *GameState) AddProjectile(firedBy *player.Player, position vector.Vector2D, direction vector.Vector2D) {
 
 	newProj := projectile.New(firedBy.Character, position, direction)
 	s.Projectiles = append(s.Projectiles, newProj)
-	s.Colliders = append(s.Colliders, newProj.Collider)
+	s.AddCollider(newProj.Collider)
+}
+
+func (s *GameState) AddCollider(collider collider.Collider2D) {
+	s.Colliders = append(s.Colliders, collider)
 }
 
 func (s *GameState) RemoveProjectile(proj *projectile.Projectile) {
@@ -88,10 +101,10 @@ func (s *GameState) RemoveProjectile(proj *projectile.Projectile) {
 		}
 	}
 }
-func (s *GameState) RemoveCollider(coll *collider.Collider2D) {
-	for _, c := range s.Colliders {
+func (s *GameState) RemoveCollider(coll collider.Collider2D) {
+	for i, c := range s.Colliders {
 		if c == coll {
-			utils.RemoveElementFromSlice(&s.Colliders, c)
+			utils.RemoveElementFromSliceAtIndex(&s.Colliders, i)
 			return
 		}
 	}
@@ -102,26 +115,6 @@ func (s *GameState) Update() {
 	for _, obj := range gameobjects {
 		obj.Update(config.DT)
 	}
-
-	for _, p := range s.Projectiles {
-		if p.IsOutsideWorld() {
-			p.Destroy()
-		}
-	}
-
-	// for _, p := range s.Projectiles {
-	// 	for _, c := range s.Characters {
-	// 		if p.CollidesWithCharacter(c) && p.FiredBy != c {
-	// 			s.RemoveProjectile(p)
-	// 			died := c.GetDamaged(p.Damage)
-	// 			if died {
-	// 				p.FiredBy.AddKill()
-	// 			}
-	// 			// log.Printf("Projectile %d hit character %s", p.Id, c.Tag)
-	// 			break
-	// 		}
-	// 	}
-	// }
 
 	collider.CheckCollidersCollisions(&s.Colliders)
 
